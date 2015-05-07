@@ -1,0 +1,52 @@
+
+detector "All shopping cart traffic" {
+
+    shoppingCart {
+        request {
+            url.uri = "/winkelmandje"
+        }
+        response {
+            status = 200
+        }
+    }
+
+    pattern {
+        sequence {}
+        relation {}
+        result constraints {}
+    }
+
+}
+
+
+var = VAR ~ ("{" ~> request ~ response <~ "}") ^^ {
+    case v ~ (req ~ res) => Variable(v, req, res)
+}
+
+props=
+
+
+
+
+Detector(List(
+    Variable,
+    Variable,
+    Variable,
+), Pattern(
+
+))
+
+
+Variable(
+    shoppingCart,
+    Request(
+        List(
+            Property(url.uri, "/winkelmandje")
+        )
+    ),
+    Response(
+        List(
+            Property(status, 200)
+        )
+    )
+)
