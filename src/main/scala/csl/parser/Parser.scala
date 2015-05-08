@@ -8,22 +8,36 @@ class Parser extends JavaTokenParsers {
 
   override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
-  def protocol = "protocol =" ~> value
 
-  def value: Parser[Value] = (regexValue | stringValue | numberValue)
+  // Request properties
+
+  def method: Parser[Method] = "method" ~> value ^^ Method
+
+  def protocol: Parser[Protocol] = "protocol" ~> value ^^ Protocol
+
+  def remoteAddress: Parser[RemoteAddress] = "remote-address" ~> value ^^ RemoteAddress
+
+  def url = "url {" ~> rep(host | uri | query) <~ "}" ^^ Url
+
+  def host = "host" ~> value ^^ Host
+
+  def uri = "uri" ~> value ^^ Uri
+
+  def query = "query"~ "{" ~> rep(parameter) <~ "}" ^^ Query
+
+  def parameter: Parser[Parameter] = key ~ value ^^ {
+    case key ~ value => Parameter(key, value)
+  }
+
+  def key: Parser[String] = """[^= ]*""".r
+
+  def value: Parser[Value] = "=" ~> (regexValue | stringValue | numberValue)
 
   def stringValue: Parser[StringValue] = ("\"" + """.*""" + "\"").r ^^ StringValue
 
   def numberValue: Parser[NumberValue] = (wholeNumber | decimalNumber) ^^ NumberValue
 
   def regexValue: Parser[RegexValue] = ("\"\"\"" + """.*""" + "\"\"\"").r ^^ RegexValue
-
-// ("\""+"""([^"\p{Cntrl}\\]|\\[\\'"bfnrt]|\\u[a-fA-F0-9]{4})*+"""+"\"").r
-
-
-//  def ltrim(s: String) = s.replaceAll("^\\s+", "")
-//  def rtrim(s: String) = s.replaceAll("\\s+$", "")
-
 
 
 
