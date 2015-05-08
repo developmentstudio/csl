@@ -9,7 +9,11 @@ class Parser extends JavaTokenParsers {
   override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
 
-  // Request properties
+  // Request related parsers.
+
+  def headers: Parser[Headers] = "headers" ~ "{" ~> rep(property) <~ "}" ^^ Headers
+
+  def cookies: Parser[Cookies] = "cookies" ~ "{" ~> rep(property) <~ "}" ^^ Cookies
 
   def method: Parser[Method] = "method" ~> value ^^ Method
 
@@ -17,23 +21,27 @@ class Parser extends JavaTokenParsers {
 
   def remoteAddress: Parser[RemoteAddress] = "remote-address" ~> value ^^ RemoteAddress
 
-  def url = "url {" ~> rep(host | uri | query) <~ "}" ^^ Url
+  def url = "url" ~ "{" ~> rep(host | uri | query) <~ "}" ^^ Url
 
   def host = "host" ~> value ^^ Host
 
   def uri = "uri" ~> value ^^ Uri
 
-  def query = "query"~ "{" ~> rep(parameter) <~ "}" ^^ Query
+  def query = "query" ~ "{" ~> rep(property) <~ "}" ^^ Query
 
-  def parameter: Parser[Parameter] = key ~ value ^^ {
-    case key ~ value => Parameter(key, value)
+  // Property related parsers.
+
+  def property: Parser[Property] = key ~ value ^^ {
+    case k ~ v => Property(k, v)
   }
 
   def key: Parser[String] = """[^= ]*""".r
 
   def value: Parser[Value] = "=" ~> (regexValue | stringValue | numberValue)
 
-  def stringValue: Parser[StringValue] = ("\"" + """.*""" + "\"").r ^^ StringValue
+  def stringValue: Parser[StringValue] = ("\"" + """.*""" + "\"").r ^^ {
+    case s => StringValue(s.substring(1, s.length - 1).replace("\\", ""))
+  }
 
   def numberValue: Parser[NumberValue] = (wholeNumber | decimalNumber) ^^ NumberValue
 

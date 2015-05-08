@@ -1,12 +1,15 @@
 package csl.ast
 
+//sealed trait RequestSection
+
 case class Protocol(value: Value)
 case class Method(value: Value)
 case class RemoteAddress(value: Value)
-case class Url(properties: List[UrlProperty])
+case class Url(sections: List[UrlSection])
+case class Headers(properties: List[Property])
+case class Cookies(properties: List[Property])
 
-sealed trait UrlProperty
-case class Host(value: Value) extends UrlProperty
-case class Uri(value: Value) extends UrlProperty
-case class Query(parameters: List[Parameter]) extends UrlProperty
-case class Parameter(key: String, value: Value)
+sealed trait UrlSection
+case class Host(value: Value) extends UrlSection
+case class Uri(value: Value)  extends UrlSection
+case class Query(parameters: List[Property])  extends UrlSection

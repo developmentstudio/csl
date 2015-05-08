@@ -25,7 +25,7 @@ class ParserSpec extends Specification with ParserMatchers {
   "Value parser" should {
     "parse string value" in {
       val property = "\"string\""
-      val result = StringValue("\"string\"")
+      val result = StringValue("string")
 
       parsers.stringValue must succeedOn(property).withResult(result)
     }
@@ -48,7 +48,7 @@ class ParserSpec extends Specification with ParserMatchers {
   "Protocol parser" should {
     "parse string value" in {
       val property = "protocol = \"string\""
-      val result = Protocol(StringValue("\"string\""))
+      val result = Protocol(StringValue("string"))
 
       parsers.protocol must succeedOn(property).withResult(result)
     }
@@ -71,7 +71,7 @@ class ParserSpec extends Specification with ParserMatchers {
   "Method parser" should {
     "parse string value" in {
       val property = "method = \"string\""
-      val result = Method(StringValue("\"string\""))
+      val result = Method(StringValue("string"))
 
       parsers.method must succeedOn(property).withResult(result)
     }
@@ -94,7 +94,7 @@ class ParserSpec extends Specification with ParserMatchers {
   "RemoteAddress parser" should {
     "parse string value" in {
       val property = "remote-address = \"string\""
-      val result = RemoteAddress(StringValue("\"string\""))
+      val result = RemoteAddress(StringValue("string"))
 
       parsers.remoteAddress must succeedOn(property).withResult(result)
     }
@@ -117,7 +117,7 @@ class ParserSpec extends Specification with ParserMatchers {
   "Host parser" should {
     "parse string value" in {
       val property = "host = \"string\""
-      val result = Host(StringValue("\"string\""))
+      val result = Host(StringValue("string"))
 
       parsers.host must succeedOn(property).withResult(result)
     }
@@ -140,7 +140,7 @@ class ParserSpec extends Specification with ParserMatchers {
   "Uri parser" should {
     "parse string value" in {
       val property = "uri = \"string\""
-      val result = Uri(StringValue("\"string\""))
+      val result = Uri(StringValue("string"))
 
       parsers.uri must succeedOn(property).withResult(result)
     }
@@ -163,23 +163,23 @@ class ParserSpec extends Specification with ParserMatchers {
   "Parameter parser" should {
     "parse query key with string value" in {
       val property = "key = \"string\""
-      val result = Parameter("key", StringValue("\"string\""))
+      val result = Property("key", StringValue("string"))
 
-      parsers.parameter must succeedOn(property).withResult(result)
+      parsers.property must succeedOn(property).withResult(result)
     }
 
     "parse query key with number value" in {
       val property = "key = 42"
-      val result = Parameter("key", NumberValue("42"))
+      val result = Property("key", NumberValue("42"))
 
-      parsers.parameter must succeedOn(property).withResult(result)
+      parsers.property must succeedOn(property).withResult(result)
     }
 
     "parse query key with regex value" in {
       val property = "key = \"\"\".*\"\"\""
-      val result = Parameter("key", RegexValue("\"\"\".*\"\"\""))
+      val result = Property("key", RegexValue("\"\"\".*\"\"\""))
 
-      parsers.parameter must succeedOn(property).withResult(result)
+      parsers.property must succeedOn(property).withResult(result)
     }
   }
 
@@ -195,7 +195,7 @@ class ParserSpec extends Specification with ParserMatchers {
       val property = "query {" +
         "key = 42" +
       "}"
-      val result = Query(List(Parameter("key", NumberValue("42"))))
+      val result = Query(List(Property("key", NumberValue("42"))))
 
       parsers.query must succeedOn(property).withResult(result)
     }
@@ -205,7 +205,7 @@ class ParserSpec extends Specification with ParserMatchers {
         "key = 42" +
         "key = \"\"\".*\"\"\"" +
       "}"
-      val result = Query(List(Parameter("key", NumberValue("42")), Parameter("key", RegexValue("\"\"\".*\"\"\""))))
+      val result = Query(List(Property("key", NumberValue("42")), Property("key", RegexValue("\"\"\".*\"\"\""))))
 
       parsers.query must succeedOn(property).withResult(result)
     }
@@ -223,7 +223,7 @@ class ParserSpec extends Specification with ParserMatchers {
       val property = "url {" +
         "host = \"www.DOMEIN.nl\"" +
       "}"
-      val result = Url(List(Host(StringValue("\"www.DOMEIN.nl\""))))
+      val result = Url(List(Host(StringValue("www.DOMEIN.nl"))))
 
       parsers.url must succeedOn(property).withResult(result)
     }
@@ -235,8 +235,8 @@ class ParserSpec extends Specification with ParserMatchers {
         "query {}" + LineBreak +
       "}"
       val result = Url(List(
-        Host(StringValue("\"www.DOMEIN.nl\"")),
-        Uri(StringValue("\"/\"")),
+        Host(StringValue("www.DOMEIN.nl")),
+        Uri(StringValue("/")),
         Query(List())
       ))
 
@@ -244,6 +244,66 @@ class ParserSpec extends Specification with ParserMatchers {
     }
   }
 
+  "Headers parser" should {
+    "parse empty section" in {
+      val property = "headers {}"
+      val result = Headers(List())
 
+      parsers.headers must succeedOn(property).withResult(result)
+    }
+
+    "parse section with single property" in {
+      val property = "headers {" +
+        "x-forwarded-host = \"www.DOMEIN.nl\"" +
+      "}"
+      val result = Headers(List(Property("x-forwarded-host", StringValue("www.DOMEIN.nl"))))
+
+      parsers.headers must succeedOn(property).withResult(result)
+    }
+
+    "parse section with multiple properties" in {
+      val property = "headers {" + LineBreak +
+        "x-forwarded-host = \"www.DOMEIN.nl\"" + LineBreak +
+        "accept-language = \"fr-FR,fr;q=0.8,en-US;q=0.6,en;q=0.4,nl;q=0.2,it;q=0.2\"" + LineBreak +
+      "}"
+      val result = Headers(List(
+        Property("x-forwarded-host", StringValue("www.DOMEIN.nl")),
+        Property("accept-language", StringValue("fr-FR,fr;q=0.8,en-US;q=0.6,en;q=0.4,nl;q=0.2,it;q=0.2"))
+      ))
+
+      parsers.headers must succeedOn(property).withResult(result)
+    }
+  }
+
+  "Cookies parser" should {
+    "parse empty section" in {
+      val property = "cookies {}"
+      val result = Cookies(List())
+
+      parsers.cookies must succeedOn(property).withResult(result)
+    }
+
+    "parse section with single property" in {
+      val property = "cookies {" +
+        "SSID = \"BwCfOx1iAAAAAACqHz9U9d8NAaofP1QB\"" +
+      "}"
+      val result = Cookies(List(Property("SSID", StringValue("BwCfOx1iAAAAAACqHz9U9d8NAaofP1QB"))))
+
+      parsers.cookies must succeedOn(property).withResult(result)
+    }
+
+    "parse section with multiple properties" in {
+      val property = "cookies {" + LineBreak +
+        "SSID = \"BwCfOx1iAAAAAACqHz9U9d8NAaofP1QB\"" + LineBreak +
+        "__sonar = \"14415719703284288293\"" + LineBreak +
+      "}"
+      val result = Cookies(List(
+        Property("SSID", StringValue("BwCfOx1iAAAAAACqHz9U9d8NAaofP1QB")),
+        Property("__sonar", StringValue("14415719703284288293"))
+      ))
+
+      parsers.cookies must succeedOn(property).withResult(result)
+    }
+  }
 
 }
