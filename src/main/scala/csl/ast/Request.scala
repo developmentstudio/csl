@@ -6,4 +6,3 @@ case class Request(o: Object)
 case class Response(o: Object)
 
 case class Property(key: String, value: Value)
-

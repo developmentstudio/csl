@@ -27,7 +27,9 @@ class Parser extends JavaTokenParsers {
 
   def value: Parser[Value] = objectValue | ("=" ~> (regexValue | dateValue | stringValue | numberValue))
 
-  def regexValue: Parser[RegexValue] = ("\"\"\"" + """.*""" + "\"\"\"").r ^^ RegexValue
+  def regexValue: Parser[RegexValue] = ("\"\"\"" + """.*""" + "\"\"\"").r ^^ {
+    case s: String => RegexValue(s.substring(3, s.length - 3).replace("\\", ""))
+  }
 
   def stringValue: Parser[StringValue] = ("\"" + """.*""").r ^^ {
     case s: String => StringValue(removeQuotes(s))

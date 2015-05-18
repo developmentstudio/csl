@@ -1,19 +1,40 @@
 package csl.interpreter
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
-import wabisabi._
-import org.json4s._
-import org.json4s.jackson.JsonMethods._
-
-
+import csl.ast.Variable
+import csl.parser.Parser
 import com.mysql.jdbc.jdbc2
-
-
+import csl.search.QueryGenerator
+import scala.io.Source
 
 
 object Interpreter {
-  def main (args: Array[String]) {
+
+  def main(args: Array[String]) {
+    val source = Source.fromFile("./src/main/resources/variable_1.csl").mkString
+
+    parseSource(source) match {
+      case Some(ast) =>
+
+        val generator = new QueryGenerator
+        val query = generator.generateMatchQuery(ast)
+        println(query)
+
+      case None => println("File not found.")
+    }
+  }
+
+  def parseSource(source: String): Option[Variable] = {
+    val parser = new Parser()
+
+    parser.parseAll[Variable](parser.variable, source) match {
+      case parser.Success(ast: Variable, _) => Some(ast)
+      case parser.Failure(msg, next) => println("Parse failure at line " + next.pos + ": " + msg); None
+      case parser.Error(msg, next) => println("Parse error at line " + next.pos + ": " + msg); None
+    }
+  }
+
+
+//  def main (args: Array[String]) {
 
 
 
@@ -59,5 +80,5 @@ object Interpreter {
 //      c <- customers
 //    } println(c)
 
-  }
+  //}
 }
