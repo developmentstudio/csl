@@ -7,13 +7,20 @@ import org.specs2.mutable.Specification
 import scala.util.matching.Regex
 
 
+
+//  def test: Variable = Variable("name", Request(Object(List(
+//    Property("url", Object(List(
+//      Property("host", StringValue("www.pdashop.nl"))
+//    )))
+//  ))), Response(Object(List.empty)))
+
 class ParserSpec extends Specification with ParserMatchers {
 
   val parsers = new Parser
 
-  val LineBreak: String = "\n"
+  val LB: String = "\n"
 
-  "Property Key parser" should {
+  "Key parser" should {
     "parse property key" in {
       val property = "d:/internet/sites/us/sewse/jabber/comment2.jse"
       val result = "d:/internet/sites/us/sewse/jabber/comment2.jse"
@@ -43,266 +50,139 @@ class ParserSpec extends Specification with ParserMatchers {
 
       parsers.regexValue must succeedOn(property).withResult(result)
     }
-  }
 
-  "Protocol parser" should {
-    "parse string value" in {
-      val property = "protocol = \"string\""
-      val result = Protocol(StringValue("string"))
+    "parse object value" in {
+      val property = "{}"
+      val result = Object()
 
-      parsers.protocol must succeedOn(property).withResult(result)
+      parsers.objectValue must succeedOn(property).withResult(result)
     }
 
-    "parse number value" in {
-      val property = "protocol = 42"
-      val result = Protocol(NumberValue("42"))
+    "parse object value with nested object properties" in {
+      val property = "{" +
+        "A {}" + LB +
+        "B {" + LB +
+          "C {}" + LB +
+        "}" + LB +
+      "}"
+      val result = Object(List(
+        Property("A", Object()),
+        Property("B", Object(List(
+          Property("C", Object())
+        )))
+      ))
 
-      parsers.protocol must succeedOn(property).withResult(result)
+      parsers.objectValue must succeedOn(property).withResult(result)
     }
 
-    "parse regex value" in {
-      val property = "protocol = \"\"\".*\"\"\""
-      val result = Protocol(RegexValue("\"\"\".*\"\"\""))
+    "parse date value" in {
+      val property = "\"2014-10-16T03:33:49+02:00\""
+      val result = DateValue("2014-10-16T03:33:49+02:00")
 
-      parsers.protocol must succeedOn(property).withResult(result)
-    }
-  }
-
-  "Method parser" should {
-    "parse string value" in {
-      val property = "method = \"string\""
-      val result = Method(StringValue("string"))
-
-      parsers.method must succeedOn(property).withResult(result)
-    }
-
-    "parse number value" in {
-      val property = "method = 42"
-      val result = Method(NumberValue("42"))
-
-      parsers.method must succeedOn(property).withResult(result)
-    }
-
-    "parse regex value" in {
-      val property = "method = \"\"\".*\"\"\""
-      val result = Method(RegexValue("\"\"\".*\"\"\""))
-
-      parsers.method must succeedOn(property).withResult(result)
+      parsers.dateValue must succeedOn(property).withResult(result)
     }
   }
 
-  "RemoteAddress parser" should {
-    "parse string value" in {
-      val property = "remote-address = \"string\""
-      val result = RemoteAddress(StringValue("string"))
-
-      parsers.remoteAddress must succeedOn(property).withResult(result)
-    }
-
-    "parse number value" in {
-      val property = "remote-address = 42"
-      val result = RemoteAddress(NumberValue("42"))
-
-      parsers.remoteAddress must succeedOn(property).withResult(result)
-    }
-
-    "parse regex value" in {
-      val property = "remote-address = \"\"\".*\"\"\""
-      val result = RemoteAddress(RegexValue("\"\"\".*\"\"\""))
-
-      parsers.remoteAddress must succeedOn(property).withResult(result)
-    }
-  }
-
-  "Host parser" should {
-    "parse string value" in {
-      val property = "host = \"string\""
-      val result = Host(StringValue("string"))
-
-      parsers.host must succeedOn(property).withResult(result)
-    }
-
-    "parse number value" in {
-      val property = "host = 42"
-      val result = Host(NumberValue("42"))
-
-      parsers.host must succeedOn(property).withResult(result)
-    }
-
-    "parse regex value" in {
-      val property = "host = \"\"\".*\"\"\""
-      val result = Host(RegexValue("\"\"\".*\"\"\""))
-
-      parsers.host must succeedOn(property).withResult(result)
-    }
-  }
-
-  "Uri parser" should {
-    "parse string value" in {
-      val property = "uri = \"string\""
-      val result = Uri(StringValue("string"))
-
-      parsers.uri must succeedOn(property).withResult(result)
-    }
-
-    "parse number value" in {
-      val property = "uri = 42"
-      val result = Uri(NumberValue("42"))
-
-      parsers.uri must succeedOn(property).withResult(result)
-    }
-
-    "parse regex value" in {
-      val property = "uri = \"\"\".*\"\"\""
-      val result = Uri(RegexValue("\"\"\".*\"\"\""))
-
-      parsers.uri must succeedOn(property).withResult(result)
-    }
-  }
-
-  "Parameter parser" should {
-    "parse query key with string value" in {
-      val property = "key = \"string\""
-      val result = Property("key", StringValue("string"))
+  "Property parser" should {
+    "parse key with string value" in {
+      val property = "prop = \"string\""
+      val result = Property("prop", StringValue("string"))
 
       parsers.property must succeedOn(property).withResult(result)
     }
 
-    "parse query key with number value" in {
-      val property = "key = 42"
-      val result = Property("key", NumberValue("42"))
+    "parse key with regex value" in {
+      val property = "prop = \"\"\".*\"\"\""
+      val result = Property("prop", RegexValue("\"\"\".*\"\"\""))
 
       parsers.property must succeedOn(property).withResult(result)
     }
 
-    "parse query key with regex value" in {
-      val property = "key = \"\"\".*\"\"\""
-      val result = Property("key", RegexValue("\"\"\".*\"\"\""))
+    "parse key with number value" in {
+      val property = "prop = 42"
+      val result = Property("prop", NumberValue("42"))
+
+      parsers.property must succeedOn(property).withResult(result)
+    }
+
+    "parse key with date value" in {
+      val property = "date = \"2014-10-16T03:33:49+02:00\""
+      val result = Property("date", DateValue("2014-10-16T03:33:49+02:00"))
+
+      parsers.property must succeedOn(property).withResult(result)
+    }
+
+    "parse key with object value" in {
+      val property = "prop {}"
+      val result = Property("prop", Object())
 
       parsers.property must succeedOn(property).withResult(result)
     }
   }
 
-  "Query parser" should {
-    "parse empty query section" in {
-      val property = "query {}"
-      val result = Query(List())
 
-      parsers.query must succeedOn(property).withResult(result)
+  "Request parser" should {
+    "parse empty body" in {
+      val property = "request {}"
+      val result = Request(Object())
+
+      parsers.request must succeedOn(property).withResult(result)
     }
 
-    "parse query section with single parameter" in {
-      val property = "query {" +
-        "key = 42" +
+    "parse body with subsections" in {
+      val property = "request {" +
+        "date = \"2014-10-16T03:33:49+02:00\"" + LB +
+        "method = \"POST\"" + LB +
+        "cookies {}" + LB +
+        "url {}" + LB +
+        "protocol = \"HTTP/1.1\"" + LB +
+        "headers {}" + LB +
       "}"
-      val result = Query(List(Property("key", NumberValue("42"))))
+      val result = Request(Object(List(
+        Property("date", DateValue("2014-10-16T03:33:49+02:00")),
+        Property("method", StringValue("POST")),
+        Property("cookies", Object()),
+        Property("url", Object()),
+        Property("protocol", StringValue("HTTP/1.1")),
+        Property("headers", Object())
+      )))
 
-      parsers.query must succeedOn(property).withResult(result)
-    }
-
-    "parse query section with multiple parameters" in {
-      val property = "query {" +
-        "key = 42" +
-        "key = \"\"\".*\"\"\"" +
-      "}"
-      val result = Query(List(Property("key", NumberValue("42")), Property("key", RegexValue("\"\"\".*\"\"\""))))
-
-      parsers.query must succeedOn(property).withResult(result)
+      parsers.request must succeedOn(property).withResult(result)
     }
   }
 
-  "Url parser" should {
-    "parse empty url section" in {
-      val property = "url {}"
-      val result = Url(List())
+  "Response parser" should {
+    "parse empty body" in {
+      val property = "response {}"
+      val result = Response(Object())
 
-      parsers.url must succeedOn(property).withResult(result)
+      parsers.response must succeedOn(property).withResult(result)
     }
 
-    "parse url section with single property" in {
-      val property = "url {" +
-        "host = \"www.DOMEIN.nl\"" +
+    "parse body with subsections" in {
+      val property = "response {" +
+        "status = 200" + LB +
+        "bytes-sent = 45053" + LB +
+        "processing-time = 0.228" + LB +
+        "headers {}" + LB +
       "}"
-      val result = Url(List(Host(StringValue("www.DOMEIN.nl"))))
+      val result = Response(Object(List(
+        Property("status", NumberValue("200")),
+        Property("bytes-sent", NumberValue("45053")),
+        Property("processing-time", NumberValue("0.228")),
+        Property("headers", Object())
+      )))
 
-      parsers.url must succeedOn(property).withResult(result)
-    }
-
-    "parse url section with multiple properties" in {
-      val property = "url {" + LineBreak +
-        "host = \"www.DOMEIN.nl\"" + LineBreak +
-        "uri = \"/\"" + LineBreak +
-        "query {}" + LineBreak +
-      "}"
-      val result = Url(List(
-        Host(StringValue("www.DOMEIN.nl")),
-        Uri(StringValue("/")),
-        Query(List())
-      ))
-
-      parsers.url must succeedOn(property).withResult(result)
+      parsers.response must succeedOn(property).withResult(result)
     }
   }
 
-  "Headers parser" should {
-    "parse empty section" in {
-      val property = "headers {}"
-      val result = Headers(List())
+  "Variable parser" should {
+    "parse empty request and response" in {
+      val property = "name = request {} => response {}"
+      val result = Variable("name", Request(Object()), Response(Object()))
 
-      parsers.headers must succeedOn(property).withResult(result)
-    }
-
-    "parse section with single property" in {
-      val property = "headers {" +
-        "x-forwarded-host = \"www.DOMEIN.nl\"" +
-      "}"
-      val result = Headers(List(Property("x-forwarded-host", StringValue("www.DOMEIN.nl"))))
-
-      parsers.headers must succeedOn(property).withResult(result)
-    }
-
-    "parse section with multiple properties" in {
-      val property = "headers {" + LineBreak +
-        "x-forwarded-host = \"www.DOMEIN.nl\"" + LineBreak +
-        "accept-language = \"fr-FR,fr;q=0.8,en-US;q=0.6,en;q=0.4,nl;q=0.2,it;q=0.2\"" + LineBreak +
-      "}"
-      val result = Headers(List(
-        Property("x-forwarded-host", StringValue("www.DOMEIN.nl")),
-        Property("accept-language", StringValue("fr-FR,fr;q=0.8,en-US;q=0.6,en;q=0.4,nl;q=0.2,it;q=0.2"))
-      ))
-
-      parsers.headers must succeedOn(property).withResult(result)
-    }
-  }
-
-  "Cookies parser" should {
-    "parse empty section" in {
-      val property = "cookies {}"
-      val result = Cookies(List())
-
-      parsers.cookies must succeedOn(property).withResult(result)
-    }
-
-    "parse section with single property" in {
-      val property = "cookies {" +
-        "SSID = \"BwCfOx1iAAAAAACqHz9U9d8NAaofP1QB\"" +
-      "}"
-      val result = Cookies(List(Property("SSID", StringValue("BwCfOx1iAAAAAACqHz9U9d8NAaofP1QB"))))
-
-      parsers.cookies must succeedOn(property).withResult(result)
-    }
-
-    "parse section with multiple properties" in {
-      val property = "cookies {" + LineBreak +
-        "SSID = \"BwCfOx1iAAAAAACqHz9U9d8NAaofP1QB\"" + LineBreak +
-        "__sonar = \"14415719703284288293\"" + LineBreak +
-      "}"
-      val result = Cookies(List(
-        Property("SSID", StringValue("BwCfOx1iAAAAAACqHz9U9d8NAaofP1QB")),
-        Property("__sonar", StringValue("14415719703284288293"))
-      ))
-
-      parsers.cookies must succeedOn(property).withResult(result)
+      parsers.variable must succeedOn(property).withResult(result)
     }
   }
 
