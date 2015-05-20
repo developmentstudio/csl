@@ -1,6 +1,7 @@
 package csl.interpreter
 
 import csl.ast.Variable
+import csl.elasticsearch.FilterQueryGenerator
 import csl.parser.Parser
 import com.mysql.jdbc.jdbc2
 import csl.search.QueryGenerator
@@ -15,9 +16,14 @@ object Interpreter {
     parseSource(source) match {
       case Some(ast) =>
 
-        val generator = new QueryGenerator
-        val query = generator.generateMatchQuery(ast)
-        println(query)
+//        val generator = new QueryGenerator
+//        val query = generator.generateMatchQuery(ast)
+//        println(query)
+
+        val filterGenerator = new FilterQueryGenerator
+        val filter = filterGenerator.generateFilterQuery(ast)
+        println(filter)
+
 
       case None => println("File not found.")
     }
