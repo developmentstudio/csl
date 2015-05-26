@@ -1,6 +1,5 @@
 package csl.elasticsearch
 
-//import csl.elasticsearch.{Filter, Query, Match}
 import csl.ast._
 
 sealed trait QueryGenerator {
