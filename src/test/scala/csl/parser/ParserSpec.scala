@@ -4,16 +4,6 @@ import csl.ast._
 import org.specs2.matcher.ParserMatchers
 import org.specs2.mutable.Specification
 
-import scala.util.matching.Regex
-
-
-
-//  def test: Variable = Variable("name", Request(Object(List(
-//    Property("url", Object(List(
-//      Property("host", StringValue("www.pdashop.nl"))
-//    )))
-//  ))), Response(Object(List.empty)))
-
 class ParserSpec extends Specification with ParserMatchers {
 
   val parsers = new Parser
@@ -39,21 +29,21 @@ class ParserSpec extends Specification with ParserMatchers {
 
     "parse number value" in {
       val property = "42"
-      val result = NumberValue("42")
+      val result = NumberValue(42)
 
       parsers.numberValue must succeedOn(property).withResult(result)
     }
 
     "parse regex value" in {
       val property = "\"\"\".*\"\"\""
-      val result = RegexValue("\"\"\".*\"\"\"")
+      val result = RegexValue(".*")
 
       parsers.regexValue must succeedOn(property).withResult(result)
     }
 
     "parse object value" in {
       val property = "{}"
-      val result = Object()
+      val result = ObjectValue()
 
       parsers.objectValue must succeedOn(property).withResult(result)
     }
@@ -65,10 +55,10 @@ class ParserSpec extends Specification with ParserMatchers {
           "C {}" + LB +
         "}" + LB +
       "}"
-      val result = Object(List(
-        Property("A", Object()),
-        Property("B", Object(List(
-          Property("C", Object())
+      val result = ObjectValue(List(
+        Property("A", ObjectValue()),
+        Property("B", ObjectValue(List(
+          Property("C", ObjectValue())
         )))
       ))
 
@@ -93,14 +83,14 @@ class ParserSpec extends Specification with ParserMatchers {
 
     "parse key with regex value" in {
       val property = "prop = \"\"\".*\"\"\""
-      val result = Property("prop", RegexValue("\"\"\".*\"\"\""))
+      val result = Property("prop", RegexValue(".*"))
 
       parsers.property must succeedOn(property).withResult(result)
     }
 
     "parse key with number value" in {
       val property = "prop = 42"
-      val result = Property("prop", NumberValue("42"))
+      val result = Property("prop", NumberValue(42))
 
       parsers.property must succeedOn(property).withResult(result)
     }
@@ -114,7 +104,7 @@ class ParserSpec extends Specification with ParserMatchers {
 
     "parse key with object value" in {
       val property = "prop {}"
-      val result = Property("prop", Object())
+      val result = Property("prop", ObjectValue())
 
       parsers.property must succeedOn(property).withResult(result)
     }
@@ -124,7 +114,7 @@ class ParserSpec extends Specification with ParserMatchers {
   "Request parser" should {
     "parse empty body" in {
       val property = "request {}"
-      val result = Request(Object())
+      val result = ObjectValue()
 
       parsers.request must succeedOn(property).withResult(result)
     }
@@ -138,14 +128,14 @@ class ParserSpec extends Specification with ParserMatchers {
         "protocol = \"HTTP/1.1\"" + LB +
         "headers {}" + LB +
       "}"
-      val result = Request(Object(List(
+      val result = ObjectValue(List(
         Property("date", DateValue("2014-10-16T03:33:49+02:00")),
         Property("method", StringValue("POST")),
-        Property("cookies", Object()),
-        Property("url", Object()),
+        Property("cookies", ObjectValue()),
+        Property("url", ObjectValue()),
         Property("protocol", StringValue("HTTP/1.1")),
-        Property("headers", Object())
-      )))
+        Property("headers", ObjectValue())
+      ))
 
       parsers.request must succeedOn(property).withResult(result)
     }
@@ -154,7 +144,7 @@ class ParserSpec extends Specification with ParserMatchers {
   "Response parser" should {
     "parse empty body" in {
       val property = "response {}"
-      val result = Response(Object())
+      val result = ObjectValue()
 
       parsers.response must succeedOn(property).withResult(result)
     }
@@ -166,12 +156,12 @@ class ParserSpec extends Specification with ParserMatchers {
         "processing-time = 0.228" + LB +
         "headers {}" + LB +
       "}"
-      val result = Response(Object(List(
-        Property("status", NumberValue("200")),
-        Property("bytes-sent", NumberValue("45053")),
-        Property("processing-time", NumberValue("0.228")),
-        Property("headers", Object())
-      )))
+      val result = ObjectValue(List(
+        Property("status", NumberValue(200)),
+        Property("bytes-sent", NumberValue(45053)),
+        Property("processing-time", NumberValue(0.228)),
+        Property("headers", ObjectValue())
+      ))
 
       parsers.response must succeedOn(property).withResult(result)
     }
@@ -180,7 +170,7 @@ class ParserSpec extends Specification with ParserMatchers {
   "Variable parser" should {
     "parse empty request and response" in {
       val property = "name = request {} => response {}"
-      val result = Variable("name", Request(Object()), Response(Object()))
+      val result = Variable("name", ObjectValue(), ObjectValue())
 
       parsers.variable must succeedOn(property).withResult(result)
     }

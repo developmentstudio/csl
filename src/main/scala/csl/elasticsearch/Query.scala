@@ -9,7 +9,7 @@ case class Match(prefix: String, p: Property) {
     case v: NumberValue => v.toString
     case v: DateValue => v.toString
     case v: RegexValue => throw new Exception("Regex Value is not implemented")
-    case Object(_) => throw new Exception("Object Value is not implemented")
+    case ObjectValue(_) => throw new Exception("Object Value is not implemented")
   }
   override def toString: String = "{ \"match\": {" + field(prefix, p) + "} }"
 }
@@ -22,6 +22,6 @@ case class Filter(prefix: String, p: Property) {
     case NumberValue(_) => "{ \"term\": {" + field(prefix, p) + "} }"
     case DateValue(_) => "{ \"term\": {" + field(prefix, p) + "} }"
     case RegexValue(_) => "{ \"regexp\": {" + field(prefix, p) + "} }"
-    case Object(_) => throw new Exception("Object Value is not implemented")
+    case ObjectValue(_) => throw new Exception("Object Value is not implemented")
   }
 }

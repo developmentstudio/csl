@@ -1,37 +1,61 @@
-package csl.search
+package csl.elasticsearch
 
-import csl.elasticsearch.Match
+//import csl.elasticsearch.{Filter, Query, Match}
 import csl.ast._
 
-class QueryGenerator {
+sealed trait QueryGenerator {
+  def generate(v: Variable): String;
+}
 
-  type Query = String
+class MatchQueryGenerator extends QueryGenerator {
 
-  def generateMatchQuery(v: Variable): Query = {
+  def generate(v: Variable): Query = {
     """{ "query": { "bool": { "must": [""" +
-      (generateMatchQuery(v.req) ++ generateMatchQuery(v.res)).map(_.toString).mkString(",") +
+      (generate(v.request, "request.") ++ generate(v.response, "response.")).map(_.toString).mkString(",") +
     """] } } }"""
   }
 
-  def generateMatchQuery(req: Request): List[Match] = {
-    req.o.ps.flatMap(p => generateMatchQuery(p, "request."))
+  private def generate(value: ObjectValue, prefix: String = ""): List[Match] = {
+    value.properties.flatMap(p => generate(p, prefix))
   }
 
-  def generateMatchQuery(res: Response): List[Match] = {
-    res.o.ps.flatMap(p => generateMatchQuery(p, "response."))
-  }
-
-  def generateMatchQuery(p: Property, prefix: String): List[Match] = {
-
+  private def generate(p: Property, prefix: String): List[Match] = {
     p.value match {
       case StringValue(_) => List(Match(prefix, p))
       case NumberValue(_) => List(Match(prefix, p))
       case DateValue(_) => List(Match(prefix, p))
       case RegexValue(_) => List(Match(prefix, p))
-      case Object(ps) => {
+      case ObjectValue(ps) => {
         val _prefix = prefix + p.key + "."
-        ps.flatMap(p => generateMatchQuery(p, _prefix))
-      };
+        ps.flatMap(p => generate(p, _prefix))
+      }
+    }
+  }
+
+}
+
+class FilterQueryGenerator extends QueryGenerator{
+
+  def generate(v: Variable): Query = {
+    """{ "filter": { "bool": { "must": [""" +
+      (generate(v.request, "request.") ++ generate(v.response, "response.")).map(_.toString).mkString(",") +
+    """] } } }"""
+  }
+
+  private def generate(value: ObjectValue, prefix: String = ""): List[Filter] = {
+    value.properties.flatMap(p => generate(p, prefix))
+  }
+
+  private def generate(p: Property, prefix: String): List[Filter] = {
+    p.value match {
+      case StringValue(_) => List(Filter(prefix, p))
+      case NumberValue(_) => List(Filter(prefix, p))
+      case DateValue(_) => List(Filter(prefix, p))
+      case RegexValue(_) => List(Filter(prefix, p))
+      case ObjectValue(ps) => {
+        val _prefix = prefix + p.key + "."
+        ps.flatMap(p => generate(p, _prefix))
+      }
     }
   }
 

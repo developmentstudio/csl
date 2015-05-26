@@ -1,12 +1,10 @@
 package csl.interpreter
 
 import csl.ast.Variable
-import csl.elasticsearch.FilterQueryGenerator
 import csl.parser.Parser
-import com.mysql.jdbc.jdbc2
-import csl.search.QueryGenerator
-import scala.io.Source
+import csl.elasticsearch.{FilterQueryGenerator, Storage, Search}
 
+import scala.io.Source
 
 object Interpreter {
 
@@ -14,17 +12,10 @@ object Interpreter {
     val source = Source.fromFile("./src/main/resources/variable_1.csl").mkString
 
     parseSource(source) match {
-      case Some(ast) =>
-
-//        val generator = new QueryGenerator
-//        val query = generator.generateMatchQuery(ast)
-//        println(query)
-
-        val filterGenerator = new FilterQueryGenerator
-        val filter = filterGenerator.generateFilterQuery(ast)
-        println(filter)
-
-
+      case Some(ast) => {
+        val search = new Search
+        search.search(ast)
+      }
       case None => println("File not found.")
     }
   }
@@ -38,7 +29,7 @@ object Interpreter {
       case parser.Error(msg, next) => println("Parse error at line " + next.pos + ": " + msg); None
     }
   }
-
+}
 
 //  def main (args: Array[String]) {
 
@@ -87,4 +78,3 @@ object Interpreter {
 //    } println(c)
 
   //}
-}

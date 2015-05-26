@@ -13,10 +13,10 @@ class Parser extends JavaTokenParsers {
   }
 
   // Request related parsers.
-  def request: Parser[Request] = "request" ~> objectValue ^^ Request
+  def request: Parser[ObjectValue] = "request" ~> objectValue
 
   // Response related parsers.
-  def response: Parser[Response] = "response" ~> objectValue ^^ Response
+  def response: Parser[ObjectValue] = "response" ~> objectValue
 
   // Property related parsers.
   def property: Parser[Property] = key ~ value ^^ {
@@ -35,15 +35,17 @@ class Parser extends JavaTokenParsers {
     case s: String => StringValue(removeQuotes(s))
   }
 
-  def numberValue: Parser[NumberValue] = (decimalNumber | wholeNumber) ^^ NumberValue
+  def numberValue: Parser[NumberValue] = (decimalNumber | wholeNumber) ^^ {
+    case n => NumberValue(n.toDouble)
+  }
 
   def dateValue: Parser[DateValue] = ("\"" + """[1-9][0-9]{3}-(0[0-9]|1[0-2])-(3[0-1]|[1-2][0-9]|0[0-9])T(2[0-4]|1[0-9]|0[0-9]):([0-5][0-9]|60):([0-5][0-9]|60)[+-](0[1-9]|1[0-2]):(00|15|30|45)""" + "\"").r ^^ {
     case s: String => DateValue(removeQuotes(s))
   }
 
-  def objectValue: Parser[Object] = "{" ~> rep(property) <~ "}" ^^ Object
+  def objectValue: Parser[ObjectValue] = "{" ~> rep(property) <~ "}" ^^ ObjectValue
 
-  def removeQuotes(s: String): String = {
+  private def removeQuotes(s: String): String = {
     s.substring(1, s.length - 1).replace("\\", "")
   }
 
