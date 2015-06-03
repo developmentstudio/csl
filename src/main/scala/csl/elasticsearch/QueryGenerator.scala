@@ -9,9 +9,18 @@ sealed trait QueryGenerator {
 class MatchQueryGenerator extends QueryGenerator {
 
   def generate(v: Variable): Query = {
-    """{ "query": { "bool": { "must": [""" +
+    """{
+      |   "query": {
+      |     "bool": {
+      |       "must": [
+    """.stripMargin +
       (generate(v.request, "request.") ++ generate(v.response, "response.")).map(_.toString).mkString(",") +
-    """] } } }"""
+
+    """       ]
+      |     }
+      |   },
+      |   "size": 100
+      |}""".stripMargin
   }
 
   private def generate(value: ObjectValue, prefix: String = ""): List[Match] = {
