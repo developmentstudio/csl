@@ -2,19 +2,20 @@ package csl.interpreter
 
 import csl.ast.Variable
 import csl.parser.Parser
-import csl.elasticsearch.{FilterQueryGenerator, Storage, Search}
-
+import csl.elasticsearch.ScrollSearch
 import scala.io.Source
+import com.mysql.jdbc.jdbc2
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object Interpreter {
 
   def main(args: Array[String]) {
-    val source = Source.fromFile("./src/main/resources/variable_1.csl").mkString
+    val source = Source.fromFile("./src/main/resources/variable_2.csl").mkString
 
     parseSource(source) match {
       case Some(ast) => {
-        val search = new Search
-        search.search(ast)
+        val search = new ScrollSearch(ast)
+        search.search()
       }
       case None => println("File not found.")
     }

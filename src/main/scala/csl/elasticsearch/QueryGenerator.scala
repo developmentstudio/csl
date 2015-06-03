@@ -36,9 +36,18 @@ class MatchQueryGenerator extends QueryGenerator {
 class FilterQueryGenerator extends QueryGenerator{
 
   def generate(v: Variable): Query = {
-    """{ "filter": { "bool": { "must": [""" +
+    """{
+      |   "filter": {
+      |     "bool": {
+      |       "must": [
+    """.stripMargin +
       (generate(v.request, "request.") ++ generate(v.response, "response.")).map(_.toString).mkString(",") +
-    """] } } }"""
+    """       ]
+      |     }
+      |   },
+      |   "size": 100
+      |}
+    """.stripMargin
   }
 
   private def generate(value: ObjectValue, prefix: String = ""): List[Filter] = {
