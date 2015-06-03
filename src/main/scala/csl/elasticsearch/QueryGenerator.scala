@@ -15,7 +15,6 @@ class MatchQueryGenerator extends QueryGenerator {
       |       "must": [
     """.stripMargin +
       (generate(v.request, "request.") ++ generate(v.response, "response.")).map(_.toString).mkString(",") +
-
     """       ]
       |     }
       |   },
