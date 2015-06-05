@@ -14,3 +14,9 @@ out
 .DS_Store
 
 
+src/main/resources/dump
+src/main/resources/ids.txt
+src/main/resources/test.txt
+src/main/resources/variable_1.csl
+src/main/resources/variable_2.csl
+src/main/scala/csl/storage/package.scala
