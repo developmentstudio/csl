@@ -8,9 +8,9 @@ class DetectorParser extends JavaTokenParsers
 {
   override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
-  def detector: Parser[Detector] = "detector" ~> label ~ detectorBody ^^ {
+  def detector: Parser[Detector] = positioned("detector" ~> label ~ detectorBody ^^ {
     case l ~ b => Detector(l, b)
-  }
+  })
 
   def label: Parser[String] = stringLiteral ^^ {
     s => s.substring(1, s.length - 1).replace("\\", "")
@@ -18,22 +18,22 @@ class DetectorParser extends JavaTokenParsers
 
   def detectorBody: Parser[List[DetectorElement]] = "{" ~> rep(find | variable) <~ "}"
 
-  def find: Parser[Find] = "find" ~ "{" ~> pattern <~ "}" ^^ {
+  def find: Parser[Find] = positioned("find" ~ "{" ~> pattern <~ "}" ^^ {
     case x => Find(x)
-  }
+  })
 
-  def pattern: Parser[Pattern] = patternDescription ~ relationDescription ^^ {
+  def pattern: Parser[Pattern] = positioned(patternDescription ~ relationDescription ^^ {
     case (v ~ r) => Pattern(v, r.filterNot(_.forall(_.equals(""))))
-  }
+  })
 
   def patternDescription: Parser[List[String]] = "pattern" ~ "{" ~> repsep(ident, "->") <~ "}"
 
   def relationDescription: Parser[List[String]] = "with" ~ "relation" ~ "on" ~ "{" ~> repsep(propertyKey, "and") <~ "}"
 
 
-  def variable: Parser[Variable] = (ident <~ "=") ~ request ~ ("=>" ~> response) ^^ {
+  def variable: Parser[Variable] = positioned((ident <~ "=") ~ request ~ ("=>" ~> response) ^^ {
     case v ~ req ~ res  => Variable(v, req, res)
-  }
+  })
 
   def request: Parser[ObjectValue] = "request" ~> objectValue
 

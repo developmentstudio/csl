@@ -1,11 +1,9 @@
 package csl.interpreter
 
-import csl.ast.{Detector, Variable}
-import csl.parser.{DetectorParser, VariableParser}
-import csl.elasticsearch.ScrollSearch
+import csl.ast.{Detector}
+import csl.parser.DetectorParser
+import csl.typechecker.{Error, Warning, TypeChecker}
 import scala.io.Source
-import com.mysql.jdbc.jdbc2
-import scala.concurrent.ExecutionContext.Implicits.global
 
 object Interpreter {
 
@@ -15,7 +13,16 @@ object Interpreter {
     parseSource(source) match {
       case Some(ast) => {
 
+        val (errors, warnings) = typeChecker(ast)
+        errors.map(println)
+        warnings.map(println)
+
+        if (errors.size > 0) {
+          System.exit(0)
+        }
+
         println(ast)
+
 
 //        val search = new ScrollSearch(ast)
 //        search.search()
@@ -32,5 +39,12 @@ object Interpreter {
       case parser.Failure(msg, next) => println("Parse failure at line " + next.pos + ": " + msg); None
       case parser.Error(msg, next) => println("Parse error at line " + next.pos + ": " + msg); None
     }
+  }
+
+  def typeChecker(ast: Detector): (List[Error], List[Warning]) = {
+    val checker = new TypeChecker
+    checker.check(ast)
+
+    (checker.errors, checker.warnings)
   }
 }

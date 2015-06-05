@@ -30,7 +30,7 @@ detector "Detector Name" {
         */
     }
 
-    C = request {
+    B = request {
         timestamp = "2014-10-16T03:33:49+02:00"
         method = "GET"
         remoteAddress = """83.[0-9]{1,3}.[0-9]{1,3}.(67|68)"""
@@ -44,7 +44,7 @@ detector "Detector Name" {
         status = 200
     }
 
-    B = request {
+    C = request {
         timestamp = "2014-10-16T03:33:49+02:00"
         method = "GET"
         remoteAddress = """83.[0-9]{1,3}.[0-9]{1,3}.(67|68)"""
