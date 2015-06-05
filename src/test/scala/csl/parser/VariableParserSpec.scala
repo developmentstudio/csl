@@ -4,18 +4,18 @@ import csl.ast._
 import org.specs2.matcher.ParserMatchers
 import org.specs2.mutable.Specification
 
-class ParserSpec extends Specification with ParserMatchers {
+class VariableParserSpec extends Specification with ParserMatchers {
 
-  val parsers = new Parser
+  val parsers = new DetectorParser
 
   val LB: String = "\n"
 
   "Key parser" should {
     "parse property key" in {
-      val property = "d:/internet/sites/us/sewse/jabber/comment2.jse"
-      val result = "d:/internet/sites/us/sewse/jabber/comment2.jse"
+      val property = "A.B.C.D.E-7.F.G"
+      val result = "A.B.C.D.E-7.F.G"
 
-      parsers.key must succeedOn(property).withResult(result)
+      parsers.propertyKey must succeedOn(property).withResult(result)
     }
   }
 

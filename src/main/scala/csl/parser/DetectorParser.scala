@@ -4,26 +4,52 @@ import csl.ast._
 
 import scala.util.parsing.combinator.JavaTokenParsers
 
-class Parser extends JavaTokenParsers {
-
+class DetectorParser extends JavaTokenParsers
+{
   override val whiteSpace = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
+
+  def detector: Parser[Detector] = "detector" ~> label ~ detectorBody ^^ {
+    case l ~ b => Detector(l, b)
+  }
+
+  def label: Parser[String] = stringLiteral ^^ {
+    s => s.substring(1, s.length - 1).replace("\\", "")
+  }
+
+  def detectorBody: Parser[List[DetectorElement]] = "{" ~> rep(find | variable) <~ "}"
+
+  def find: Parser[Find] = "find" ~ "{" ~> pattern <~ "}" ^^ {
+    case x => Find(x)
+  }
+
+  def pattern: Parser[Pattern] = patternDescription ~ relationDescription ^^ {
+    case (v ~ r) => Pattern(v, r.filterNot(_.forall(_.equals(""))))
+  }
+
+  def patternDescription: Parser[List[String]] = "pattern" ~ "{" ~> repsep(ident, "->") <~ "}"
+
+  def relationDescription: Parser[List[String]] = "with" ~ "relation" ~ "on" ~ "{" ~> repsep(propertyKey, "and") <~ "}"
+
 
   def variable: Parser[Variable] = (ident <~ "=") ~ request ~ ("=>" ~> response) ^^ {
     case v ~ req ~ res  => Variable(v, req, res)
   }
 
-  // Request related parsers.
   def request: Parser[ObjectValue] = "request" ~> objectValue
 
-  // Response related parsers.
   def response: Parser[ObjectValue] = "response" ~> objectValue
 
-  // Property related parsers.
-  def property: Parser[Property] = key ~ value ^^ {
+  def property: Parser[Property] = propertyKey ~ value ^^ {
     case k ~ v => Property(k, v)
   }
 
-  def key: Parser[String] = """[^= {}]*""".r
+  //def key: Parser[String] = """[^= {}]*""".r
+
+  def propertyKey: Parser[String] = repsep(propertyKeyPart, ".") ^^  {
+    case s => s.mkString(".")
+  }
+
+  def propertyKeyPart: Parser[String] = """[a-zA-Z0-9-]{1,64}""".r
 
   def value: Parser[Value] = objectValue | ("=" ~> (regexValue | dateValue | stringValue | numberValue))
 

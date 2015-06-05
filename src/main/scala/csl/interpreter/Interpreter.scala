@@ -1,7 +1,7 @@
 package csl.interpreter
 
-import csl.ast.Variable
-import csl.parser.Parser
+import csl.ast.{Detector, Variable}
+import csl.parser.{DetectorParser, VariableParser}
 import csl.elasticsearch.ScrollSearch
 import scala.io.Source
 import com.mysql.jdbc.jdbc2
@@ -10,72 +10,27 @@ import scala.concurrent.ExecutionContext.Implicits.global
 object Interpreter {
 
   def main(args: Array[String]) {
-    val source = Source.fromFile("./src/main/resources/variable_2.csl").mkString
+    val source = Source.fromFile("./src/main/resources/test_3.csl").mkString
 
     parseSource(source) match {
       case Some(ast) => {
-        val search = new ScrollSearch(ast)
-        search.search()
+
+        println(ast)
+
+//        val search = new ScrollSearch(ast)
+//        search.search()
       }
-      case None => println("File not found.")
+      case None => println("Parser Failed.")
     }
   }
 
-  def parseSource(source: String): Option[Variable] = {
-    val parser = new Parser()
+  def parseSource(source: String): Option[Detector] = {
+    val parser = new DetectorParser()
 
-    parser.parseAll[Variable](parser.variable, source) match {
-      case parser.Success(ast: Variable, _) => Some(ast)
+    parser.parseAll[Detector](parser.detector, source) match {
+      case parser.Success(ast: Detector, _) => Some(ast)
       case parser.Failure(msg, next) => println("Parse failure at line " + next.pos + ": " + msg); None
       case parser.Error(msg, next) => println("Parse error at line " + next.pos + ": " + msg); None
     }
   }
 }
-
-//  def main (args: Array[String]) {
-
-
-
-    // Elastic Search
-//    val client = new Client("http://localhost:9200")
-//    client.search("20141016", "").onSuccess { case ground =>
-//      val body = ground.getResponseBody()
-//      val result = parse(body)
-//      println(result)
-//    }
-
-    // MySQL
-//    val url = "jdbc:mysql://127.0.0.1/local_system_dashboard?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8"
-//    val user = "root"
-//    val driverString = "com.mysql.jdbc.Driver"
-//    val db = Database.forURL(url, user, driver=driverString)
-//    println(db)
-//
-//
-//
-//    class Customers(tag: Tag) extends Table[(Int, String)](tag, "CUSTOMERS") {
-//      def id = column[Int]("customer_id", O.PrimaryKey, O.AutoInc)
-//      def name = column[String]("name")
-//      def * = (id, name)
-//    }
-//    val customers = TableQuery[Customers]
-
-//    println("Coffees:")
-//    db.run(customers.result).map(_.foreach {
-//      case (name, supID, price, sales, total) =>
-//        println("  " + name + "\t" + supID + "\t" + price + "\t" + sales + "\t" + total)
-//    })
-
-
-    //for (c <- customers) println(c)
-    //println(customers)
-
-
-//
-//
-//
-//    for {
-//      c <- customers
-//    } println(c)
-
-  //}

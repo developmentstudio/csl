@@ -1,6 +1,8 @@
 package csl.ast
 
-sealed trait Value
+import scala.util.parsing.input.Positional
+
+sealed trait Value extends Positional
 case class StringValue(value: String) extends Value {
   override def toString: String = "\"" + value + "\""
 }
