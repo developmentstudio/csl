@@ -6,6 +6,8 @@ sealed trait QueryGenerator {
   def generate(v: Variable): String
 }
 
+
+// TODO: MatchQueryGenerator is not used so far.
 class MatchQueryGenerator extends QueryGenerator {
 
   def generate(v: Variable): Query = {
