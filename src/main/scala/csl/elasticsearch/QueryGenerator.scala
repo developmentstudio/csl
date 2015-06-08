@@ -3,7 +3,7 @@ package csl.elasticsearch
 import csl.ast._
 
 sealed trait QueryGenerator {
-  def generate(v: Variable): String;
+  def generate(v: Variable): String
 }
 
 class MatchQueryGenerator extends QueryGenerator {
@@ -32,10 +32,7 @@ class MatchQueryGenerator extends QueryGenerator {
       case NumberValue(_) => List(Match(prefix, p))
       case DateValue(_) => List(Match(prefix, p))
       case RegexValue(_) => List(Match(prefix, p))
-      case ObjectValue(ps) => {
-        val _prefix = prefix + p.key + "."
-        ps.flatMap(p => generate(p, _prefix))
-      }
+      case ObjectValue(ps) => ps.flatMap(p => generate(p, prefix + p.key + "."))
     }
   }
 
@@ -68,10 +65,7 @@ class FilterQueryGenerator extends QueryGenerator{
       case NumberValue(_) => List(Filter(prefix, p))
       case DateValue(_) => List(Filter(prefix, p))
       case RegexValue(_) => List(Filter(prefix, p))
-      case ObjectValue(ps) => {
-        val _prefix = prefix + p.key + "."
-        ps.flatMap(p => generate(p, _prefix))
-      }
+      case ObjectValue(ps) => ps.flatMap(p => generate(p, prefix + p.key + "."))
     }
   }
 

@@ -1,6 +1,7 @@
 package csl.interpreter
 
-import csl.ast.{Detector}
+import csl.ast.Detector
+import csl.elasticsearch.ScrollSearch
 import csl.parser.DetectorParser
 import csl.typechecker.{Error, Warning, TypeChecker}
 import scala.io.Source
@@ -11,23 +12,18 @@ object Interpreter {
     val source = Source.fromFile("./src/main/resources/test_3.csl").mkString
 
     parseSource(source) match {
-      case Some(ast) => {
+      case Some(detector) =>
+        val (errors, warnings) = typeChecker(detector)
+        errors.foreach(println)
+        warnings.foreach(println)
 
-        val (errors, warnings) = typeChecker(ast)
-        errors.map(println)
-        warnings.map(println)
-
-        if (errors.size > 0) {
+        if (errors.nonEmpty) {
           System.exit(0)
         }
 
-        println(ast)
-
-
-//        val search = new ScrollSearch(ast)
-//        search.search()
-      }
-      case None => println("Parser Failed.")
+        val search = new ScrollSearch(detector)
+        search.search()
+      case None => println("Parser failed.")
     }
   }
 

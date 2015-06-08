@@ -11,7 +11,7 @@ class TypeChecker {
   def check(detector: Detector): Unit = check(detector.body)
 
   def check(body: List[DetectorElement]): Unit = {
-    filterVariables(body).map(checkVariable)
+    filterVariables(body).foreach(checkVariable)
 
     if (multipleFindDefinitions(body)) {
       addError(Error(s"Multiple find definitions found.", None))
@@ -29,7 +29,7 @@ class TypeChecker {
 
   def checkVariable(v: Variable): Unit = {
     this.variables get v.name match {
-      case Some(_) => addError(Error(s"Variable ${v.name} is already defined", Some(v.pos)))
+      case Some(x) => addError(Error(s"Variable ${v.name} is already defined at line ${x.pos}", Some(v.pos)))
       case None => this.variables = this.variables + (v.name -> v)
     }
   }
@@ -37,19 +37,19 @@ class TypeChecker {
   def checkFind(f: Find): Unit = {
     // TODO: Check Pattern
     val vars = f.pattern.variables
-    val relation = f.pattern.relations
+    val relation = f.pattern.relationKeys
     val position = Some(f.pattern.pos)
 
     // - Error: if no pattern.
-    if (vars.size == 0) {
+    if (vars.isEmpty) {
       addError(Error("No pattern described", position))
     } else
     // - Error: Pattern exist out of more than 1 variable and no relation is given.
-    if (vars.size > 1 && relation.size == 0) {
+    if (vars.nonEmpty && relation.isEmpty) {
       addError(Error(s"No relation between request pattern described.", position))
     } else {
       // - All variables are defined?
-      vars.map(x => this.variables getOrElse(x, addError(Error(s"Unknown request description variable ${x}.", position))))
+      vars.map(x => this.variables getOrElse(x, addError(Error(s"Unknown request description variable $x.", position))))
     }
 
     //println(f.pattern)
@@ -58,10 +58,10 @@ class TypeChecker {
 
   def addWarning(warning: Warning) = this.warnings = this.warnings :+ warning
 
-  def hasWarnings(): Boolean = this.warnings.size > 0
+  def hasWarnings: Boolean = this.warnings.nonEmpty
 
   def addError(error: Error) = this.errors = this.errors :+ error
 
-  def hasErrors(): Boolean = this.errors.size > 0
+  def hasErrors: Boolean = this.errors.nonEmpty
 
 }
