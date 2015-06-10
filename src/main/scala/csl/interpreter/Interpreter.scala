@@ -3,7 +3,8 @@ package csl.interpreter
 import csl.ast.Detector
 import csl.elasticsearch.ScrollSearch
 import csl.parser.DetectorParser
-import csl.typechecker.{Error, Warning, TypeChecker}
+import csl.typechecker.{Error, TypeChecker, Warning}
+
 import scala.io.Source
 
 object Interpreter {
@@ -23,6 +24,8 @@ object Interpreter {
 
         val search = new ScrollSearch(detector)
         search.search()
+
+
       case None => println("Parser failed.")
     }
   }

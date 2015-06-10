@@ -1,6 +1,6 @@
 package csl.typechecker
 
-import csl.ast.{Find, Variable, DetectorElement, Detector}
+import csl.ast.{Detector, DetectorElement, Find, Variable}
 
 class TypeChecker {
 

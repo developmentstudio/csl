@@ -1,12 +1,10 @@
 package csl.elasticsearch
 
 import csl.ast.{Detector, Variable}
+import wabisabi.{Scan, SearchUriParameters}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import scala.util.{Failure, Success}
-
-import wabisabi.{Scan, SearchUriParameters}
 
 class ScrollSearch(detector: Detector, generator: FilterQueryGenerator = new FilterQueryGenerator)
 {
@@ -15,13 +13,16 @@ class ScrollSearch(detector: Detector, generator: FilterQueryGenerator = new Fil
   private val responseParser: ResponseParser = new ResponseParser
 
   def search(_index: Index = "20141016"): Unit =  {
-    for (v <- detector.variables) searchVariable(v, _index)
+    detector.find.pattern.variables.distinct foreach(v => {
+      detector.variable(v) match {
+        case Some(x) => searchVariable(x, _index)
+        case None => throw new Exception("Type checker failed to detect non defined variables used in pattern.")
+      }
+    })
   }
 
   def searchVariable(variable: Variable, _index: Index): Unit =  {
-
     val query = generator.generate(variable)
-
     val req = client.search(_index, query, uriParameters = SearchUriParameters(searchType = Some(Scan), scroll = Some("10m")))
     req onComplete {
       case Success(body) =>
@@ -32,7 +33,7 @@ class ScrollSearch(detector: Detector, generator: FilterQueryGenerator = new Fil
     }
   }
 
-  private def scroll(scroll_id: String, variable: Variable): Unit = Future {
+  private def scroll(scroll_id: String, variable: Variable): Unit = {
     client.scroll("10m", scroll_id) onComplete {
       case Success(body) =>
         val response = responseParser.parseJSON(body.getResponseBody)
@@ -48,3 +49,13 @@ class ScrollSearch(detector: Detector, generator: FilterQueryGenerator = new Fil
   }
 
 }
+
+class PatternDetector(detector: Detector)
+{
+  def detect(): Unit = {
+
+  }
+
+
+}
+

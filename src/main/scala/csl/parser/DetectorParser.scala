@@ -43,8 +43,6 @@ class DetectorParser extends JavaTokenParsers
     case k ~ v => Property(k, v)
   }
 
-  //def key: Parser[String] = """[^= {}]*""".r
-
   def propertyKey: Parser[String] = repsep(propertyKeyPart, ".") ^^  {
     case s => s.mkString(".")
   }
