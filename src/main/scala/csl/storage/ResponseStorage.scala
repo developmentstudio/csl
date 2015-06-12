@@ -25,19 +25,19 @@ object ResponseStorage {
   def save(response: Response, label: Option[String], relationKeys: List[String]): Unit = {
     if (response.hasHits) {
       generateQueries(response.hits.hits, label, relationKeys)
-//      try {
-//        executeQuery(this.resultSetQuery)
-//      } catch {
-//        case e: SQLException => println(e.getMessage)
-//        case e => println("Error 1: " + label); println(e); println(this.resultSetQuery)
-//      }
-//
-//      try {
-//        executeQuery(this.documentLabelQuery)
-//      } catch {
-//        case e: SQLException => println(e.getMessage)
-//        case e => println("Error 2: " + label); println(e); println(this.documentLabelQuery)
-//      }
+      try {
+        executeQuery(this.resultSetQuery)
+      } catch {
+        case e: SQLException => println(e.getMessage)
+        case e => println("Error 1: " + label); println(e); println(this.resultSetQuery)
+      }
+
+      try {
+        executeQuery(this.documentLabelQuery)
+      } catch {
+        case e: SQLException => println(e.getMessage)
+        case e => println("Error 2: " + label); println(e); println(this.documentLabelQuery)
+      }
     }
   }
 

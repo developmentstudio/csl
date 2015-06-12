@@ -3,8 +3,9 @@ package csl.elasticsearch
 import java.sql.PreparedStatement
 import java.util.concurrent.TimeUnit
 
-import csl.ast.{Property, Pattern, Detector, Variable}
-import csl.storage.{ResponseStorage, MySQLConnection}
+import csl.ast.{Detector, Pattern, Variable}
+import csl.elasticsearch.parser.{RelationParser, ResponseParser}
+import csl.storage.{MySQLConnection, ResponseStorage}
 import wabisabi.{Scan, SearchUriParameters}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -47,7 +48,7 @@ class ScrollSearch(detector: Detector)
 
   private def collectAllDocumentsMatchingVariable(variable: Variable, index: ESIndex): Unit =
   {
-    val query = this.generator.generate(variable)
+    val query = this.generator.generate(variable.properties)
 
     println(query) // TODO: Remove
 
@@ -99,6 +100,7 @@ class ScrollSearch(detector: Detector)
       }
       statement
     }
+
     val result = statement.executeQuery()
 
     while(result.next()) {
@@ -106,7 +108,24 @@ class ScrollSearch(detector: Detector)
       // TODO: Create ES request.
       // TODO: Parse Response from ES.
 
-      println(result.getString("relation")) // TODO: Remove
+      val relation = RelationParser.parseJSON(result.getString("relation"))
+      val query = this.generator.generate(relation.properties)
+
+      println(query)
+
+
     }
   }
 }
+
+/* TODO: Brainstorm thingy:
+
+Detector.collect(List[Variable])
+Detector.collect(List[Relation])
+Detector.report()
+
+
+Variables.collect(detector: Detector)
+Relation.collect(detector: Detector)
+
+*/

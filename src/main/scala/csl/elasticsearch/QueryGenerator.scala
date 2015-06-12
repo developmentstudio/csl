@@ -4,13 +4,13 @@ import csl.ast._
 import csl.elasticsearch.ast.Filter
 
 sealed trait QueryGenerator {
-  def generate(v: Variable): String
+  def generate(properties: List[Property]): String
 }
 
 class FilterQueryGenerator extends QueryGenerator
 {
-  def generate(v: Variable): Query = {
-    val filters = generate(v.properties)
+  def generate(properties: List[Property]): Query = {
+    val filters = properties map(createFilter)
     val jsonFilter = filters.map(_.toString).mkString(",")
 
     """{
@@ -18,15 +18,13 @@ class FilterQueryGenerator extends QueryGenerator
       |     "bool": {
       |       "must": [
     """.stripMargin + jsonFilter +
-    """       ]
-      |     }
-      |   },
-      |   "size": 100
-      |}
-    """.stripMargin
+      """       ]
+        |     }
+        |   },
+        |   "size": 100
+        |}
+      """.stripMargin
   }
-
-  private def generate(properties: List[Property]): List[Filter] = properties map(createFilter)
 
   private def createFilter(p: Property): Filter = Filter(p)
 }

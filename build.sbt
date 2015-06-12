@@ -14,6 +14,6 @@ libraryDependencies ++= Seq(
   "org.specs2" %% "specs2-matcher-extra" % "2.4.16" % "test",
   "org.slf4j" % "slf4j-simple" % "1.6.4",
   "wabisabi" %% "wabisabi" % "2.1.3",
-  "org.json4s" %% "json4s-jackson" % "3.2.10",
+  "org.json4s" %% "json4s-jackson" % "3.2.11",
   "mysql" % "mysql-connector-java" % "5.1.12"
 )

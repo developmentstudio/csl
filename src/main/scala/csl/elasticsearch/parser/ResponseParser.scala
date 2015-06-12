@@ -1,4 +1,4 @@
-package csl.elasticsearch
+package csl.elasticsearch.parser
 
 import csl.elasticsearch.ast.Response
 import org.json4s.DefaultFormats
