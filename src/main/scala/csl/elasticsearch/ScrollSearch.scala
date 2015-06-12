@@ -1,61 +1,99 @@
 package csl.elasticsearch
 
-import csl.ast.{Detector, Variable}
+import java.sql.PreparedStatement
+
+import csl.ast.{Pattern, Detector, Variable}
+import csl.storage.{ResponseStorage, MySQLConnection}
 import wabisabi.{Scan, SearchUriParameters}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
-class ScrollSearch(detector: Detector, generator: FilterQueryGenerator = new FilterQueryGenerator)
+// TODO: ScrollSearch is not the right name.
+class ScrollSearch(detector: Detector)
 {
-  type Index = String
+  type ESIndex = String
 
-  private val responseParser: ResponseParser = new ResponseParser
+  private val generator: FilterQueryGenerator = new FilterQueryGenerator
+  private val pattern: Pattern = this.detector.find.pattern
+  private var finishedVariables: List[String] = List.empty
 
-  def search(_index: Index = "20141016"): Unit =  {
-    detector.find.pattern.variables.distinct foreach(v => {
-      detector.variable(v) match {
-        case Some(x) => searchVariable(x, _index)
-        case None => throw new Exception("Type checker failed to detect non defined variables used in pattern.")
+  private def waitForDocumentCollectionToComplete: Unit =
+  {
+    while (this.finishedVariables.distinct.size != this.pattern.variables.distinct.size) Thread.sleep(1000)
+  }
+
+  def search(index: ESIndex = "20141016"): Unit =
+  {
+    this.pattern.variables.distinct foreach(v => {
+      this.detector.variable(v) match {
+        case Some(variable) => this.collectAllDocumentsMatchingVariable(variable, index)
+        case None => throw new Exception(s"Type checker failed: Variabel $v is not defined.")
       }
     })
+
+    this.waitForDocumentCollectionToComplete
+    this.collectAllRelatedDocuments
+
+    println("Completed! I am the last message you will receive!!")
   }
 
-  def searchVariable(variable: Variable, _index: Index): Unit =  {
-    val query = generator.generate(variable)
-    val req = client.search(_index, query, uriParameters = SearchUriParameters(searchType = Some(Scan), scroll = Some("10m")))
-    req onComplete {
-      case Success(body) =>
-        val response = responseParser.parseJSON(body.getResponseBody)
-        scroll(response._scroll_id, variable)
-        println(s"Total hits for ${variable.name}: ${response.hits.total}")
+  private def collectAllDocumentsMatchingVariable(variable: Variable, index: ESIndex): Unit =
+  {
+    val query = this.generator.generate(variable)
+    val request = client.search(index, query, uriParameters = SearchUriParameters(searchType = Some(Scan), scroll = Some("10m")))
+    request onComplete {
+      case Success(r) =>
+        val response = ResponseParser.parseJSON(r.getResponseBody)
+        this.collectNextPageForVariable(response._scroll_id, variable)
       case Failure(e) => println("An error has occured: " + e.getMessage)
     }
   }
 
-  private def scroll(scroll_id: String, variable: Variable): Unit = {
-    client.scroll("10m", scroll_id) onComplete {
-      case Success(body) =>
-        val response = responseParser.parseJSON(body.getResponseBody)
-        val collection = new ResultCollection(response.hits.hits, detector.find.pattern.relationKeys)
-        if (collection.hasResults) {
-          collection.save(variable.name)
-          scroll(response._scroll_id, variable)
+  private def collectNextPageForVariable(scroll_id: String, variable: Variable): Unit =
+  {
+    val request = client.scroll("10m", scroll_id)
+    request.onComplete {
+      case Success(r) =>
+        val response = ResponseParser.parseJSON(r.getResponseBody)
+        if (response.hasHits) {
+          ResponseStorage.save(response, Some(variable.name), this.pattern.relationKeys)
+          this.collectNextPageForVariable(response._scroll_id, variable)
         } else {
-          println(s"${variable.name} Completed!")
+          this.finishedVariables = this.finishedVariables :+ variable.name
         }
-      case Failure(e) => println("An error has occured: " + e.getMessage)
+      case Failure(e) => throw new Exception(e)
     }
   }
 
-}
+  private def collectAllRelatedDocuments: Unit = {
+    val statement: PreparedStatement = {
+      val variables = this.pattern.variables.distinct
+      var query  = "SELECT DISTINCT(relation) FROM raw_result_set"
+      if (variables.nonEmpty) {
+        query += " WHERE "
+        var parts: List[String] = List.empty
+        variables.foreach(_ => {
+          parts = parts :+ "_id in (SELECT _id FROM document_label WHERE variable_name = ?)"
+        })
+        query += parts.mkString(" AND ")
+      }
+      val statement = MySQLConnection.prepareStatement(query)
+      if (variables.nonEmpty) {
+        for((variableName, i) <- variables.view.zipWithIndex) statement.setString(i + 1, variableName)
+      }
+      statement
+    }
+    val result = statement.executeQuery()
 
-class PatternDetector(detector: Detector)
-{
-  def detect(): Unit = {
+    while(result.next()) {
+      // TODO: Create ES request from json string.
+      // TODO: Create ES request.
+      // TODO: Parse Response from ES.
 
+      println(result.getString("relation"))
+    }
+
+    statement.close()
   }
-
-
 }
-

@@ -4,6 +4,10 @@ import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
 case class Response(_scroll_id: String, took: String, timed_out: Boolean, _shards: Shards, hits: Hits)
+{
+  def hasHits: Boolean = hits.hits.nonEmpty
+}
+
 case class Shards(total: Int, successful: Int, failed: Int)
 case class Hits(total: Int, max_score: Double, hits: List[Result])
 

@@ -22,6 +22,7 @@ object Interpreter {
           System.exit(0)
         }
 
+        // Idea: detector.detect instead of the lines below?
         val search = new ScrollSearch(detector)
         search.search()
 
