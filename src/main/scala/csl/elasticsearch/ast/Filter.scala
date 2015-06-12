@@ -2,14 +2,15 @@ package csl.elasticsearch.ast
 
 import csl.ast.{DateValue, NumberValue, ObjectValue, Property, RegexValue, StringValue, Value}
 
-case class Filter(prefix: String, p: Property) {
-  def field(prefix: String, p: Property) = "\"" + prefix + p.key + "\"" + ":" + value(p.value)
-  def value(v: Value): String = v.toString
+case class Filter(p: Property) {
+
+  private val field: String = "\"" + this.p.key + "\": " + p.value.toString
+
   override def toString: String = p.value match {
-    case StringValue(_) => "{ \"term\": {" + field(prefix, p) + "} }"
-    case NumberValue(_) => "{ \"term\": {" + field(prefix, p) + "} }"
-    case DateValue(_) => "{ \"term\": {" + field(prefix, p) + "} }"
-    case RegexValue(_) => "{ \"regexp\": {" + field(prefix, p) + "} }"
+    case StringValue(_) => "{ \"term\": {" + field + "} }"
+    case NumberValue(_) => "{ \"term\": {" + field + "} }"
+    case DateValue(_) => "{ \"term\": {" + field + "} }"
+    case RegexValue(_) => "{ \"regexp\": {" + field + "} }"
     case ObjectValue(_) => throw new Exception("Object Value is not implemented")
   }
 }

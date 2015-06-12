@@ -1,12 +1,12 @@
 package csl.storage
 
-import java.sql.{PreparedStatement, Timestamp}
+import java.sql.{PreparedStatement, SQLException, Timestamp}
 import javax.xml.bind.DatatypeConverter
 
 import csl.elasticsearch.ast.{Response, Result}
 import org.json4s.JsonAST.JObject
-import org.json4s.{JValue, JString}
 import org.json4s.jackson.JsonMethods.{compact, render}
+import org.json4s.{JString, JValue}
 
 object ResponseStorage {
 
@@ -25,8 +25,19 @@ object ResponseStorage {
   def save(response: Response, label: Option[String], relationKeys: List[String]): Unit = {
     if (response.hasHits) {
       generateQueries(response.hits.hits, label, relationKeys)
-      executeQuery(this.resultSetQuery)
-      executeQuery(this.documentLabelQuery)
+//      try {
+//        executeQuery(this.resultSetQuery)
+//      } catch {
+//        case e: SQLException => println(e.getMessage)
+//        case e => println("Error 1: " + label); println(e); println(this.resultSetQuery)
+//      }
+//
+//      try {
+//        executeQuery(this.documentLabelQuery)
+//      } catch {
+//        case e: SQLException => println(e.getMessage)
+//        case e => println("Error 2: " + label); println(e); println(this.documentLabelQuery)
+//      }
     }
   }
 
@@ -61,7 +72,7 @@ object ResponseStorage {
 
   private def executeQuery(statement: PreparedStatement): Unit = {
     statement.executeBatch()
-    statement.close()
+    //statement.close()
   }
 
   private def generateRelation(result: Result, relationKeys: List[String]): String = {

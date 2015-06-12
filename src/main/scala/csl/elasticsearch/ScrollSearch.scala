@@ -1,8 +1,9 @@
 package csl.elasticsearch
 
 import java.sql.PreparedStatement
+import java.util.concurrent.TimeUnit
 
-import csl.ast.{Pattern, Detector, Variable}
+import csl.ast.{Property, Pattern, Detector, Variable}
 import csl.storage.{ResponseStorage, MySQLConnection}
 import wabisabi.{Scan, SearchUriParameters}
 
@@ -20,7 +21,12 @@ class ScrollSearch(detector: Detector)
 
   private def waitForDocumentCollectionToComplete: Unit =
   {
-    while (this.finishedVariables.distinct.size != this.pattern.variables.distinct.size) Thread.sleep(1000)
+    while (this.finishedVariables.distinct.size != this.pattern.variables.distinct.size) {
+      print("Waiting.. ") // TODO: Remove
+      print(this.finishedVariables.distinct + " ") // TODO: Remove
+      println(this.pattern.variables.distinct) // TODO: Remove
+      TimeUnit.SECONDS.sleep(1);
+    }
   }
 
   def search(index: ESIndex = "20141016"): Unit =
@@ -35,12 +41,16 @@ class ScrollSearch(detector: Detector)
     this.waitForDocumentCollectionToComplete
     this.collectAllRelatedDocuments
 
-    println("Completed! I am the last message you will receive!!")
+    println("Completed! I am the last message you will receive!!") // TODO: Remove
+    System.exit(0)
   }
 
   private def collectAllDocumentsMatchingVariable(variable: Variable, index: ESIndex): Unit =
   {
     val query = this.generator.generate(variable)
+
+    println(query) // TODO: Remove
+
     val request = client.search(index, query, uriParameters = SearchUriParameters(searchType = Some(Scan), scroll = Some("10m")))
     request onComplete {
       case Success(r) =>
@@ -56,10 +66,15 @@ class ScrollSearch(detector: Detector)
     request.onComplete {
       case Success(r) =>
         val response = ResponseParser.parseJSON(r.getResponseBody)
+
         if (response.hasHits) {
           ResponseStorage.save(response, Some(variable.name), this.pattern.relationKeys)
           this.collectNextPageForVariable(response._scroll_id, variable)
         } else {
+
+          println("-> " + variable.name + " " + r.getResponseBody) // TODO: Remove
+
+
           this.finishedVariables = this.finishedVariables :+ variable.name
         }
       case Failure(e) => throw new Exception(e)
@@ -91,9 +106,7 @@ class ScrollSearch(detector: Detector)
       // TODO: Create ES request.
       // TODO: Parse Response from ES.
 
-      println(result.getString("relation"))
+      println(result.getString("relation")) // TODO: Remove
     }
-
-    statement.close()
   }
 }
