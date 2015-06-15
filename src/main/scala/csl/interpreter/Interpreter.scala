@@ -1,8 +1,9 @@
 package csl.interpreter
 
 import csl.ast.Detector
-import csl.elasticsearch.ScrollSearch
+import csl.elasticsearch.VariableCollector
 import csl.parser.DetectorParser
+import csl.storage.ResponseStorage
 import csl.typechecker.{Error, TypeChecker, Warning}
 
 import scala.io.Source
@@ -19,13 +20,20 @@ object Interpreter {
         warnings.foreach(println)
 
         if (errors.nonEmpty) {
-          System.exit(0)
+          System.exit(500)
         }
 
         // Idea: detector.detect instead of the lines below?
-        val search = new ScrollSearch(detector)
-        search.search()
+//        val search = new ScrollSearch(detector)
+//        search.search()
 
+        ResponseStorage.clear
+
+        val variableCollector = new VariableCollector(detector)
+        val finished = variableCollector.collect
+        println(finished)
+
+      System.exit(200)
 
       case None => println("Parser failed.")
     }
