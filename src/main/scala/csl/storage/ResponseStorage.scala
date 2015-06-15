@@ -3,28 +3,58 @@ package csl.storage
 import java.sql._
 import javax.xml.bind.DatatypeConverter
 
-import csl.elasticsearch.ast.{Response, Result}
+import csl.ast.Pattern
+import csl.elasticsearch.ast.{Relation, Response, Result}
+import csl.elasticsearch.parser.RelationParser
 import org.json4s.JsonAST.JObject
 import org.json4s.jackson.JsonMethods.{compact, render}
 import org.json4s.{JString, JValue}
 
 object ResponseStorage {
 
+  val driver = "com.mysql.jdbc.Driver"
+  val url = "jdbc:mysql://127.0.0.1:3306/csl"
+  val username = "root"
+  val password = "root"
+
+  Class.forName(driver).newInstance()
+  val connection = DriverManager.getConnection(url, username, password)
+
   def clear: Unit = {
-    val driver = "com.mysql.jdbc.Driver"
-    val url = "jdbc:mysql://127.0.0.1:3306/csl"
-    val username = "root"
-    val password = "root"
-    Class.forName(driver).newInstance()
-    val connection = DriverManager.getConnection(url, username, password)
-
     val deleteSetQuery = connection.prepareStatement("DELETE FROM raw_result_set")
-    val deleteLabelQuery = connection.prepareStatement("DELETE FROM document_label")
-
     deleteSetQuery.execute()
+
+    val deleteLabelQuery = connection.prepareStatement("DELETE FROM document_label")
     deleteLabelQuery.execute()
   }
 
+  def getRelations(pattern: Pattern): List[Relation] = {
+    val statement: PreparedStatement = {
+      val variables = pattern.variables.distinct
+      var query  = "SELECT DISTINCT(relation) FROM raw_result_set"
+      if (variables.nonEmpty) {
+        query += " WHERE "
+        var parts: List[String] = List.empty
+        variables.foreach(_ => {
+          parts = parts :+ "_id in (SELECT _id FROM document_label WHERE variable_name = ?)"
+        })
+        query += parts.mkString(" AND ")
+      }
+      val statement = MySQLConnection.prepareStatement(query)
+      if (variables.nonEmpty) {
+        for((variableName, i) <- variables.view.zipWithIndex) statement.setString(i + 1, variableName)
+      }
+      statement
+    }
+    val result = statement.executeQuery()
+
+    var relations: List[Relation] = List.empty
+    while(result.next()) {
+      relations = relations :+ RelationParser.parseJSON(result.getString("relation"))
+    }
+
+    relations
+  }
 
   def save(response: Response, label: Option[String], relationKeys: List[String]): Unit = {
     if (response.hasHits) {
@@ -70,10 +100,12 @@ object ResponseStorage {
 
       resultSetQuery.executeBatch()
       documentLabelQuery.executeBatch()
+    }
+  }
 
-      if (!connection.isClosed) {
-        connection.close()
-      }
+  def close(): Unit = {
+    if (!connection.isClosed) {
+      connection.close()
     }
   }
 

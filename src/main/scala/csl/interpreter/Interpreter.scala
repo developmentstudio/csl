@@ -1,7 +1,7 @@
 package csl.interpreter
 
 import csl.ast.Detector
-import csl.elasticsearch.VariableCollector
+import csl.elasticsearch.{RelationCollector, VariableCollector}
 import csl.parser.DetectorParser
 import csl.storage.ResponseStorage
 import csl.typechecker.{Error, TypeChecker, Warning}
@@ -23,17 +23,19 @@ object Interpreter {
           System.exit(500)
         }
 
-        // Idea: detector.detect instead of the lines below?
-//        val search = new ScrollSearch(detector)
-//        search.search()
-
         ResponseStorage.clear
 
         val variableCollector = new VariableCollector(detector)
-        val finished = variableCollector.collect
-        println(finished)
+        if (variableCollector.collect) {
+          println("Variable Collector completed")
+        }
 
-      System.exit(200)
+        val relationCollector = new RelationCollector(detector)
+        if (relationCollector.collect) {
+          println("Relation Collector completed")
+        }
+
+        System.exit(200)
 
       case None => println("Parser failed.")
     }

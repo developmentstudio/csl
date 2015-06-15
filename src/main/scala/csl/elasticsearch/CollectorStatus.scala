@@ -2,24 +2,22 @@ package csl.elasticsearch
 
 import java.io.{BufferedReader, File, FileReader, FileWriter}
 
-import csl.ast.Variable
+class CollectorStatus(file: String) {
 
-class CollectorStatus {
-
-  private val filePath: String = "./src/main/resources/log.txt"
+  private val filePath: String = "./src/main/resources/" + file
 
   def init = {
     val writer = new FileWriter(filePath, true)
     writer.close()
   }
 
-  def setCompleted(variable: Variable) = {
+  def setCompleted(identifier: String) = {
     val writer = new FileWriter(filePath, true)
-    writer.write(s"${variable.name}\n")
+    writer.write(s"$identifier\n")
     writer.close()
   }
 
-  def isCompleted(variables: List[String]): Boolean = {
+  def isCompleted(identifier: List[String]): Boolean = {
     var completed: List[String] = List.empty
 
     val reader = new BufferedReader(new FileReader(filePath));
@@ -30,7 +28,7 @@ class CollectorStatus {
     }
     reader.close();
 
-    completed.distinct.size == variables.distinct.size
+    completed.distinct.size == identifier.distinct.size
   }
 
   def clear: Unit = new File(filePath).delete()

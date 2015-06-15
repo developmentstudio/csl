@@ -4,8 +4,9 @@ import java.sql.PreparedStatement
 import java.util.concurrent.TimeUnit
 
 import csl.ast.{Detector, Pattern, Variable}
-import csl.elasticsearch.parser.{RelationParser, ResponseParser}
-import csl.storage.{MySQLConnection, ResponseStorage}
+import csl.elasticsearch.ast.Relation
+import csl.elasticsearch.parser.ResponseParser
+import csl.storage.ResponseStorage
 import wabisabi.{Scan, SearchUriParameters}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -40,7 +41,7 @@ class ScrollSearch(detector: Detector)
     })
 
     this.waitForDocumentCollectionToComplete
-    this.collectAllRelatedDocuments
+    //this.collectAllRelatedDocuments
 
     println("Completed! I am the last message you will receive!!") // TODO: Remove
     System.exit(0)
@@ -49,9 +50,6 @@ class ScrollSearch(detector: Detector)
   private def collectAllDocumentsMatchingVariable(variable: Variable, index: ESIndex): Unit =
   {
     val query = this.generator.generate(variable.properties)
-
-    println(query) // TODO: Remove
-
     val request = client.search(index, query, uriParameters = SearchUriParameters(searchType = Some(Scan), scroll = Some("10m")))
     request onComplete {
       case Success(r) =>
@@ -72,51 +70,61 @@ class ScrollSearch(detector: Detector)
           ResponseStorage.save(response, Some(variable.name), this.pattern.relationKeys)
           this.collectNextPageForVariable(response._scroll_id, variable)
         } else {
-
           println("-> " + variable.name + " " + r.getResponseBody) // TODO: Remove
-
-
           this.finishedVariables = this.finishedVariables :+ variable.name
         }
       case Failure(e) => throw new Exception(e)
     }
   }
 
-  private def collectAllRelatedDocuments: Unit = {
-    val statement: PreparedStatement = {
-      val variables = this.pattern.variables.distinct
-      var query  = "SELECT DISTINCT(relation) FROM raw_result_set"
-      if (variables.nonEmpty) {
-        query += " WHERE "
-        var parts: List[String] = List.empty
-        variables.foreach(_ => {
-          parts = parts :+ "_id in (SELECT _id FROM document_label WHERE variable_name = ?)"
-        })
-        query += parts.mkString(" AND ")
-      }
-      val statement = MySQLConnection.prepareStatement(query)
-      if (variables.nonEmpty) {
-        for((variableName, i) <- variables.view.zipWithIndex) statement.setString(i + 1, variableName)
-      }
-      statement
-    }
-
-    val result = statement.executeQuery()
-
-    while(result.next()) {
-      // TODO: Create ES request from json string.
-      // TODO: Create ES request.
-      // TODO: Parse Response from ES.
-
-      val relation = RelationParser.parseJSON(result.getString("relation"))
-      val query = this.generator.generate(relation.properties)
-
-      println(query)
-
-
-    }
-  }
+//  private def collectAllRelatedDocuments: Unit = {
+//    val statement: PreparedStatement = {
+//      val variables = this.pattern.variables.distinct
+//      var query  = "SELECT DISTINCT(relation) FROM raw_result_set"
+//      if (variables.nonEmpty) {
+//        query += " WHERE "
+//        var parts: List[String] = List.empty
+//        variables.foreach(_ => {
+//          parts = parts :+ "_id in (SELECT _id FROM document_label WHERE variable_name = ?)"
+//        })
+//        query += parts.mkString(" AND ")
+//      }
+//      val statement = MySQLConnection.prepareStatement(query)
+//      if (variables.nonEmpty) {
+//        for((variableName, i) <- variables.view.zipWithIndex) statement.setString(i + 1, variableName)
+//      }
+//      statement
+//    }
+//
+//    val result = statement.executeQuery()
+//
+//    while(result.next()) {
+//      // TODO: Create ES request.
+//      // TODO: Parse Response from ES.
+//
+//      val relation = RelationParser.parseJSON(result.getString("relation"))
+//      val query = this.generator.generate(relation.properties)
+//
+//      println(query)
+//
+//
+//    }
+//  }
 }
+
+
+
+
+
+
+
+//class RelationCollector(detector: Detector)
+//{
+//  def collect(relation: Relation): Boolean = {
+//    true
+//  }
+//}
+
 
 /* TODO: Brainstorm thingy:
 

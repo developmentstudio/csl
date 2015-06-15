@@ -21,7 +21,7 @@ class VariableCollector(detector: Detector)
     for (name <- variableNames) yield detector.variable(name).get
   }
 
-  private val status = new CollectorStatus
+  private val status = new CollectorStatus("variable_request_status.log")
 
   def collect: Boolean = {
     this.variables.distinct foreach(search)
@@ -52,7 +52,7 @@ class VariableCollector(detector: Detector)
           ResponseStorage.save(response, Some(variable.name), this.detector.find.pattern.relationKeys)
           this.scrollNextPage(response._scroll_id, variable)
         } else {
-          status.setCompleted(variable)
+          status.setCompleted(variable.name)
         }
       case Failure(e) => throw new Exception(e)
     }
@@ -60,10 +60,12 @@ class VariableCollector(detector: Detector)
 
   private def waitForDocumentCollectionToComplete: Unit =
   {
+    print("Waiting") // TODO: Remove
     while (!this.status.isCompleted(this.detector.find.pattern.variables.distinct)) {
-      println("Waiting.. ") // TODO: Remove
+      print(".") // TODO: Remove
       TimeUnit.SECONDS.sleep(1);
     }
+    println(".") // TODO: Remove
     this.status.clear
   }
 }
