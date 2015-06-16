@@ -1,6 +1,8 @@
 package csl.elasticsearch
 
-import java.io.{BufferedReader, File, FileReader, FileWriter}
+import java.io.{File, FileWriter}
+
+import scala.io.Source
 
 class CollectorStatus(file: String) {
 
@@ -17,18 +19,10 @@ class CollectorStatus(file: String) {
     writer.close()
   }
 
-  def isCompleted(identifier: List[String]): Boolean = {
-    var completed: List[String] = List.empty
-
-    val reader = new BufferedReader(new FileReader(filePath));
-    var line = reader.readLine();
-    while (line != null) {
-      completed = completed :+ line
-      line = reader.readLine();
-    }
-    reader.close();
-
-    completed.distinct.size == identifier.distinct.size
+  def isCompleted(collectionParts: List[String]): Boolean = {
+    val lineIterator = Source.fromFile(filePath).getLines
+    val completed = (for(line <- lineIterator) yield line).toList
+    completed.distinct.size == collectionParts.distinct.size
   }
 
   def clear: Unit = new File(filePath).delete()
