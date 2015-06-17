@@ -49,7 +49,7 @@ class DetectorParser extends JavaTokenParsers
 
   def propertyKeyPart: Parser[String] = """[a-zA-Z0-9-]{1,64}""".r
 
-  def value: Parser[Value] = objectValue | ("=" ~> (regexValue | dateValue | stringValue | numberValue))
+  def value: Parser[Value] = objectValue | (":" ~> (regexValue | dateValue | stringValue | numberValue))
 
   def regexValue: Parser[RegexValue] = ("\"\"\"" + """.*""" + "\"\"\"").r ^^ {
     //case s: String => RegexValue(s.substring(3, s.length - 3).replace("\\", ""))
