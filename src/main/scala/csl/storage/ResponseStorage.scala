@@ -40,7 +40,7 @@ object ResponseStorage {
         })
         query += parts.mkString(" AND ")
       }
-      val statement = MySQLConnection.prepareStatement(query)
+      val statement = connection.prepareStatement(query)
       if (variables.nonEmpty) {
         for((variableName, i) <- variables.view.zipWithIndex) statement.setString(i + 1, variableName)
       }
