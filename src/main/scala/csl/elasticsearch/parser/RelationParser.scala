@@ -11,7 +11,7 @@ object RelationParser
 
   def parseJSON(json: String): Relation = {
     val parsedJson = parse(json).extract[Map[String, Any]]
-    val properties = for ((key, value) <- parsedJson) yield Property(key, StringValue(value.toString))
-    Relation(properties.toList)
+    val ps = for ((key, value) <- parsedJson) yield Property(key, StringValue(value.toString))
+    Relation(properties = ps.toList, rawJson = json)
   }
 }

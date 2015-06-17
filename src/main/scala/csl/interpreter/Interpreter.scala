@@ -1,7 +1,7 @@
 package csl.interpreter
 
 import csl.ast.Detector
-import csl.elasticsearch.{RelationCollector, VariableCollector}
+import csl.elasticsearch.{PatternDetector, RelationCollector, VariableCollector}
 import csl.parser.DetectorParser
 import csl.storage.ResponseStorage
 import csl.typechecker.{Error, TypeChecker, Warning}
@@ -23,6 +23,9 @@ object Interpreter {
           System.exit(500)
         }
 
+
+        println(detector)
+
         ResponseStorage.clear
 
         val variableCollector = new VariableCollector(detector)
@@ -34,6 +37,9 @@ object Interpreter {
         if (relationCollector.collect) {
           println("Relation Collector completed")
         }
+
+        val patternDetector = new PatternDetector(detector)
+        patternDetector.detect
 
         System.exit(200)
 

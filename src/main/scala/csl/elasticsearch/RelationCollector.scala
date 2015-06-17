@@ -21,7 +21,8 @@ class RelationCollector(detector: Detector)
 
   private val status = new CollectorStatus("relation_request_status.log")
 
-  def collect: Boolean = {  
+  def collect: Boolean = {
+    println("Start Relation Collector!")
     this.relations.distinct foreach(search)
     this.waitForDocumentCollectionToComplete
     println("Collection of Related Documents completed!") // TODO: Remove
@@ -31,39 +32,49 @@ class RelationCollector(detector: Detector)
   private def search(relation: Relation): Unit =
   {
     val query = this.generator.generate(relation.properties)
-    val request = client.search(index, query, uriParameters = SearchUriParameters(searchType = Some(Scan), scroll = Some("10m")))
-    request onComplete {
-      case Success(r) =>
-        val response = ResponseParser.parseJSON(r.getResponseBody)
-        this.scrollNextPage(response._scroll_id, relation)
-      case Failure(e) => println("An error has occured: " + e.getMessage)
+    try {
+      val request = client.search(index, query, uriParameters = SearchUriParameters(searchType = Some(Scan), scroll = Some("10m")))
+      request onComplete {
+        case Success(r) =>
+          val response = ResponseParser.parseJSON(r.getResponseBody)
+          this.scrollNextPage(response._scroll_id, relation)
+        case Failure(e) => println("An error has occured: " + e.getMessage)
+      }
+    } catch {
+      case e: Throwable => println("ERROR?!")
     }
+
   }
 
   private def scrollNextPage(scroll_id: String, relation: Relation): Unit =
   {
-    val request = client.scroll("10m", scroll_id)
-    request.onComplete {
-      case Success(r) =>
-        val response = ResponseParser.parseJSON(r.getResponseBody)
-        if (response.hasHits) {
-          ResponseStorage.save(response, None, this.detector.find.pattern.relationKeys)
-          this.scrollNextPage(response._scroll_id, relation)
-        } else {
-          status.setCompleted(relation.toString)
-        }
-      case Failure(e) => throw new Exception(e)
+    try {
+      val request = client.scroll("10m", scroll_id)
+      request.onComplete {
+        case Success(r) =>
+          val response = ResponseParser.parseJSON(r.getResponseBody)
+          if (response.hasHits) {
+            ResponseStorage.save(response, None, this.detector.find.pattern.relationKeys)
+            this.scrollNextPage(response._scroll_id, relation)
+          } else {
+            status.setCompleted(relation.toString)
+          }
+        case Failure(e) => throw new Exception(e)
+      }
+    } catch {
+      case e: Throwable => println("?!RORRE")
     }
+
   }
 
   private def waitForDocumentCollectionToComplete: Unit =
   {
-    print("Waiting") // TODO: Remove
+    //print("Waiting") // TODO: Remove
     while (!this.status.isCompleted(this.relations map(_.toString))) {
-      print(".") // TODO: Remove
+      //print(".") // TODO: Remove
       TimeUnit.SECONDS.sleep(1);
     }
-    println(".") // TODO: Remove
+    //println(".") // TODO: Remove
     this.status.clear
   }
 

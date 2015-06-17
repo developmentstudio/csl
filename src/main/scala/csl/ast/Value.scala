@@ -13,6 +13,6 @@ case class DateValue(value: String) extends Value {
   override def toString: String = "\"" + value + "\""
 }
 case class RegexValue(value: String) extends Value {
-  override def toString: String = "\"" + value + "\""
+  override def toString: String = "\"" + value.replace("\\", "\\\\") + "\""
 }
 case class ObjectValue(properties: List[Property] = List.empty) extends Value

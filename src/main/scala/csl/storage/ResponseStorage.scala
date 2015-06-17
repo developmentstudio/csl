@@ -56,16 +56,49 @@ object ResponseStorage {
     relations
   }
 
+  def getDocumentsBy(relation: Relation): List[Document] = {
+    val statement = connection.prepareStatement(
+      "SELECT raw_result_set._index, raw_result_set._type, raw_result_set._id, raw_result_set.relation, raw_result_set.timestamp, document_label.variable_name " +
+      "FROM raw_result_set " +
+      "LEFT JOIN document_label ON raw_result_set._id = document_label._id " +
+      "WHERE raw_result_set.relation = ?" +
+      "ORDER BY raw_result_set.relation ASC, raw_result_set.timestamp ASC"
+    )
+    statement.setString(1, relation.rawJson)
+    val result = statement.executeQuery()
+
+    var docMap: Map[String, Document] = Map.empty
+    while(result.next())
+    {
+      val _index = result.getString("_index")
+      val _type = result.getString("_type")
+      val _id = result.getString("_id")
+      val relation = result.getString("relation")
+      val timestamp = result.getString("timestamp")
+      val variable_name = result.getString("variable_name")
+
+      docMap get _id match {
+        case Some(d) => {
+          d.addLabel(variable_name)
+          docMap = docMap + (_id -> d)
+        }
+        case None => {
+          if (variable_name != null) {
+            docMap = docMap + (_id -> Document(_index, _type, _id, timestamp, List(variable_name)))
+          } else {
+            docMap = docMap + (_id -> Document(_index, _type, _id, timestamp, List.empty))
+          }
+        }
+      }
+    }
+    result.close()
+    statement.close()
+
+    docMap.values.toList.sortBy(_._timestamp)
+  }
+
   def save(response: Response, label: Option[String], relationKeys: List[String]): Unit = {
     if (response.hasHits) {
-
-      val driver = "com.mysql.jdbc.Driver"
-      val url = "jdbc:mysql://127.0.0.1:3306/csl"
-      val username = "root"
-      val password = "root"
-      Class.forName(driver).newInstance()
-      val connection = DriverManager.getConnection(url, username, password)
-
       val resultSetQuery = connection.prepareStatement(
         "INSERT INTO raw_result_set (_index, _type, _id, relation, timestamp) " +
           "VALUES (?, ?, ?, ?, ?) " +
@@ -120,4 +153,12 @@ object ResponseStorage {
     compact(render(new JObject(rel)))
   }
 
+}
+
+
+case class Document(_index: String, _type: String, _id: String, _timestamp: String, var labels: List[String])
+{
+  def addLabel(label: String): Unit = this.labels = this.labels :+ label
+
+  def hasLabel(label: String): Boolean = this.labels contains(label)
 }

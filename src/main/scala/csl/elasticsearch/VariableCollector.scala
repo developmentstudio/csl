@@ -33,10 +33,15 @@ class VariableCollector(detector: Detector)
   private def search(variable: Variable): Unit =
   {
     val query = this.generator.generate(variable.properties)
+
+    println(query)
+
     val request = client.search(index, query, uriParameters = SearchUriParameters(searchType = Some(Scan), scroll = Some("10m")))
     request onComplete {
       case Success(r) =>
         val response = ResponseParser.parseJSON(r.getResponseBody)
+
+        println("Variable A exist " + response.hits.total + " times in the ES index.")
         this.scrollNextPage(response._scroll_id, variable)
       case Failure(e) => println("An error has occured: " + e.getMessage)
     }
@@ -60,12 +65,12 @@ class VariableCollector(detector: Detector)
 
   private def waitForDocumentCollectionToComplete: Unit =
   {
-    print("Waiting") // TODO: Remove
+    //print("Waiting") // TODO: Remove
     while (!this.status.isCompleted(this.detector.find.pattern.variables.distinct)) {
-      print(".") // TODO: Remove
+      //print(".") // TODO: Remove
       TimeUnit.SECONDS.sleep(1);
     }
-    println(".") // TODO: Remove
+    //println(".") // TODO: Remove
     this.status.clear
   }
 }
