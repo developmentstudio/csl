@@ -45,7 +45,7 @@ class TypeChecker {
       addError(Error("No pattern described", position))
     } else
     // - Error: Pattern exist out of more than 1 variable and no relation is given.
-    if (vars.nonEmpty && relation.isEmpty) {
+    if (vars.length > 1 && relation.isEmpty) {
       addError(Error(s"No relation between request pattern described.", position))
     } else {
       // - All variables are defined?
