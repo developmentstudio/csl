@@ -9,6 +9,8 @@ class CollectorStatus(file: String) {
   private val filePath: String = "./src/main/resources/" + file
 
   def init = {
+    this.clear
+
     val writer = new FileWriter(filePath, true)
     writer.close()
   }
