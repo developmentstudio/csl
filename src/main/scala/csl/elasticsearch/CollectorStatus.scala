@@ -20,8 +20,9 @@ class CollectorStatus(file: String) {
   }
 
   def isCompleted(collectionParts: List[String]): Boolean = {
-    val lineIterator = Source.fromFile(filePath).getLines
-    val completed = (for(line <- lineIterator) yield line).toList
+    val file = Source.fromFile(filePath)
+    val completed = (for(line <- file.getLines) yield line).toList
+    file.close
     completed.distinct.size == collectionParts.distinct.size
   }
 
