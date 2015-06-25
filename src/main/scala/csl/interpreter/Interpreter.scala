@@ -8,6 +8,7 @@ import csl.typechecker.{Error, TypeChecker, Warning}
 
 import scala.io.Source
 
+
 object Interpreter {
 
   def main(args: Array[String]) {
@@ -15,6 +16,9 @@ object Interpreter {
 
     parseSource(source) match {
       case Some(detector) =>
+
+        val start = System.nanoTime()
+
         val (errors, warnings) = typeChecker(detector)
         errors.foreach(println)
         warnings.foreach(println)
@@ -22,7 +26,6 @@ object Interpreter {
         if (errors.nonEmpty) {
           System.exit(500)
         }
-
 
         println(detector)
 
@@ -40,6 +43,9 @@ object Interpreter {
 
         val patternDetector = new PatternDetector(detector)
         patternDetector.detect
+
+        val end = System.nanoTime()
+        println("Elapsed time: " + (end - start) / 1000000000 + " seconds")
 
         System.exit(200)
 
