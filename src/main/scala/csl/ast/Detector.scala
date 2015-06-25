@@ -37,3 +37,12 @@ case class Variable(name: String, request: ObjectValue, response: ObjectValue) e
 
 case class Find(pattern: Pattern) extends DetectorElement
 case class Pattern(variables: List[String], relationKeys: List[String]) extends Positional
+
+sealed trait PatternElement
+case class Identifier(name: String) extends PatternElement
+case class In(variables: List[Identifier]) extends PatternElement
+case class Not(variables: List[Identifier]) extends PatternElement
+case class Repeat(id: Identifier, times: Int) extends PatternElement
+sealed trait Wildcard extends PatternElement
+case class SingleWildcard() extends PatternElement with Wildcard
+case class MultiWildcard() extends PatternElement with Wildcard

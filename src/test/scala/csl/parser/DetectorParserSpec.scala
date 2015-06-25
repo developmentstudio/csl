@@ -35,6 +35,44 @@ class DetectorParserSpec extends Specification with ParserMatchers {
     }
   }
 
+  "helper parser" should {
+    "parse 'in' helper" in {
+      val property = "in(A, B, C)"
+      val result = In(List(Identifier("A"), Identifier("B"), Identifier("C")))
+
+      parsers.in must succeedOn(property).withResult(result)
+    }
+
+    "parse 'not' helper" in {
+      val property = "not(A, B, C)"
+      val result = Not(List(Identifier("A"), Identifier("B"), Identifier("C")))
+
+      parsers.not must succeedOn(property).withResult(result)
+    }
+
+    "parse 'repeat' helper" in {
+      val property = "repeat(A, 5)"
+      val result = Repeat(Identifier("A"), 5)
+
+      parsers.repeat must succeedOn(property).withResult(result)
+    }
+
+    "parse wildcard '?' helper" in {
+      val property = "?"
+      val result = SingleWildcard()
+
+      parsers.wildcard must succeedOn(property).withResult(result)
+    }
+
+    "parse wildcard '*' helper" in {
+      val property = "*"
+      val result = MultiWildcard()
+
+      parsers.wildcard must succeedOn(property).withResult(result)
+    }
+
+  }
+
   "pattern parser" should {
     "parse pattern description" in {
       val property = "pattern { A -> C -> N } with relation on { A.B.C and C and N }"

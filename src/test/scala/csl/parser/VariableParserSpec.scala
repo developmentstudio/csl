@@ -75,28 +75,28 @@ class VariableParserSpec extends Specification with ParserMatchers {
 
   "Property parser" should {
     "parse key with string value" in {
-      val property = "prop = \"string\""
+      val property = "prop: \"string\""
       val result = Property("prop", StringValue("string"))
 
       parsers.property must succeedOn(property).withResult(result)
     }
 
     "parse key with regex value" in {
-      val property = "prop = \"\"\".*\"\"\""
+      val property = "prop: \"\"\".*\"\"\""
       val result = Property("prop", RegexValue(".*"))
 
       parsers.property must succeedOn(property).withResult(result)
     }
 
     "parse key with number value" in {
-      val property = "prop = 42"
+      val property = "prop: 42"
       val result = Property("prop", NumberValue(42))
 
       parsers.property must succeedOn(property).withResult(result)
     }
 
     "parse key with date value" in {
-      val property = "date = \"2014-10-16T03:33:49+02:00\""
+      val property = "date: \"2014-10-16T03:33:49+02:00\""
       val result = Property("date", DateValue("2014-10-16T03:33:49+02:00"))
 
       parsers.property must succeedOn(property).withResult(result)
@@ -121,11 +121,11 @@ class VariableParserSpec extends Specification with ParserMatchers {
 
     "parse body with subsections" in {
       val property = "request {" +
-        "date = \"2014-10-16T03:33:49+02:00\"" + LB +
-        "method = \"POST\"" + LB +
+        "date: \"2014-10-16T03:33:49+02:00\"" + LB +
+        "method: \"POST\"" + LB +
         "cookies {}" + LB +
         "url {}" + LB +
-        "protocol = \"HTTP/1.1\"" + LB +
+        "protocol: \"HTTP/1.1\"" + LB +
         "headers {}" + LB +
       "}"
       val result = ObjectValue(List(
@@ -151,9 +151,9 @@ class VariableParserSpec extends Specification with ParserMatchers {
 
     "parse body with subsections" in {
       val property = "response {" +
-        "status = 200" + LB +
-        "bytes-sent = 45053" + LB +
-        "processing-time = 0.228" + LB +
+        "status: 200" + LB +
+        "bytes-sent: 45053" + LB +
+        "processing-time: 0.228" + LB +
         "headers {}" + LB +
       "}"
       val result = ObjectValue(List(

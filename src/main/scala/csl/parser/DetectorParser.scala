@@ -28,8 +28,24 @@ class DetectorParser extends JavaTokenParsers
 
   def patternDescription: Parser[List[String]] = "pattern" ~ "{" ~> repsep(ident, "->") <~ "}"
 
-  def relationDescription: Parser[List[String]] = "with" ~ "relation" ~ "on" ~ "{" ~> repsep(propertyKey, "and") <~ "}"
+  def patternElement: Parser[PatternElement] = (wildcard | in | not | repeat | identifier)
 
+  def identifier: Parser[Identifier] = ident ^^ Identifier
+
+  def in: Parser[In] = "in" ~ "(" ~> repsep(identifier, ",") <~ ")" ^^ In
+
+  def not: Parser[Not] = "not" ~ "(" ~> repsep(identifier, ",") <~ ")" ^^ Not
+
+  def repeat: Parser[Repeat] = "repeat" ~ "(" ~> identifier ~ ("," ~> wholeNumber) <~ ")" ^^ {
+    case (id ~ times) => Repeat(id, times.toInt)
+  }
+
+  def wildcard: Parser[Wildcard] = ("?" | "*") ^^ {
+    case "?" => SingleWildcard()
+    case "*" => MultiWildcard()
+  }
+
+  def relationDescription: Parser[List[String]] = "with" ~ "relation" ~ "on" ~ "{" ~> repsep(propertyKey, "and") <~ "}"
 
   def variable: Parser[Variable] = positioned((ident <~ "=") ~ request ~ ("=>" ~> response) ^^ {
     case v ~ req ~ res  => Variable(v, req, res)
