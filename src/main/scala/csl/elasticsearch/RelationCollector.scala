@@ -31,19 +31,22 @@ class RelationCollector(detector: Detector)
 
   private def search(relation: Relation): Unit =
   {
-    val query = this.generator.generate(relation.properties)
-    try {
-      val request = client.search(index, query, uriParameters = SearchUriParameters(searchType = Some(Scan), scroll = Some("10m")))
-      request onComplete {
-        case Success(r) =>
-          val response = ResponseParser.parseJSON(r.getResponseBody)
-          this.scrollNextPage(response._scroll_id, relation)
-        case Failure(e) => println("An error has occured: " + e.getMessage)
+    if (relation.properties.length > 0 && this.detector.find.pattern.elements.length > 1) {
+      val query = this.generator.generate(relation.properties)
+      try {
+        val request = client.search(index, query, uriParameters = SearchUriParameters(searchType = Some(Scan), scroll = Some("10m")))
+        request onComplete {
+          case Success(r) =>
+            val response = ResponseParser.parseJSON(r.getResponseBody)
+            this.scrollNextPage(response._scroll_id, relation)
+          case Failure(e) => println("An error has occured: " + e.getMessage)
+        }
+      } catch {
+        case e: Throwable => println("ERROR?!")
       }
-    } catch {
-      case e: Throwable => println("ERROR?!")
+    } else {
+      status.setCompleted(relation.toString)
     }
-
   }
 
   private def scrollNextPage(scroll_id: String, relation: Relation): Unit =
@@ -54,7 +57,7 @@ class RelationCollector(detector: Detector)
         case Success(r) =>
           val response = ResponseParser.parseJSON(r.getResponseBody)
           if (response.hasHits) {
-            ResponseStorage.save(response, None, this.detector.find.pattern.relationKeys)
+            ResponseStorage.save(response, None, this.detector.find.relation.keys)
             this.scrollNextPage(response._scroll_id, relation)
           } else {
             status.setCompleted(relation.toString)
@@ -69,13 +72,15 @@ class RelationCollector(detector: Detector)
 
   private def waitForDocumentCollectionToComplete: Unit =
   {
-    //print("Waiting") // TODO: Remove
-    while (!this.status.isCompleted(this.relations map(_.toString))) {
-      //print(".") // TODO: Remove
+//    print("Waiting") // TODO: Remove
+    val parts = this.relations map(_.toString)
+    while (!this.status.isCompleted(parts)) {
+//      print(".") // TODO: Remove
       TimeUnit.SECONDS.sleep(1);
     }
-    //println(".") // TODO: Remove
+//    println(".") // TODO: Remove
     this.status.clear
   }
 
 }
+

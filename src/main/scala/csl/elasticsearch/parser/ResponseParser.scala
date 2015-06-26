@@ -9,7 +9,6 @@ object ResponseParser
   implicit val formats = DefaultFormats
 
   def parseJSON(json: String): Response = {
-    println(json)
     Thread.sleep(100)
     parse(json).extract[Response]
   }

@@ -1,17 +1,18 @@
 package csl.typechecker
 
-import csl.ast.{Detector, DetectorElement, Find, Variable}
+import csl.ast
+import csl.ast._
 
 class TypeChecker {
 
-  var variables: Map[String, Variable] = Map.empty
+  var variables: Map[String, RequestDefinition] = Map.empty
   var errors: List[Error] = List.empty
   var warnings: List[Warning] = List.empty
 
   def check(detector: Detector): Unit = check(detector.body)
 
   def check(body: List[DetectorElement]): Unit = {
-    filterVariables(body).foreach(checkVariable)
+    filterVariables(body).foreach(checkRequestDefinition)
 
     if (multipleFindDefinitions(body)) {
       addError(Error(s"Multiple find definitions found.", None))
@@ -23,11 +24,11 @@ class TypeChecker {
     }
   }
 
-  def filterVariables(elements: List[DetectorElement]): List[Variable] = elements.collect{ case v: Variable => v }
+  def filterVariables(elements: List[DetectorElement]): List[RequestDefinition] = elements.collect{ case v: RequestDefinition => v }
 
   def multipleFindDefinitions(elements: List[DetectorElement]): Boolean = elements.collect{ case f: Find => f }.size > 1
 
-  def checkVariable(v: Variable): Unit = {
+  def checkRequestDefinition(v: RequestDefinition): Unit = {
     this.variables get v.name match {
       case Some(x) => addError(Error(s"Variable ${v.name} is already defined at line ${x.pos}", Some(v.pos)))
       case None => this.variables = this.variables + (v.name -> v)
@@ -35,33 +36,36 @@ class TypeChecker {
   }
 
   def checkFind(f: Find): Unit = {
-    // TODO: Check Pattern
-    val vars = f.pattern.variables
-    val relation = f.pattern.relationKeys
-    val position = Some(f.pattern.pos)
+    val pattern = f.pattern
+    val relation = f.relation
 
-    // - Error: if no pattern.
-    if (vars.isEmpty) {
-      addError(Error("No pattern described", position))
+    if (!pattern.isDefined) {
+      addError(Error("No pattern described", Some(pattern.pos)))
     } else
-    // - Error: Pattern exist out of more than 1 variable and no relation is given.
-    if (vars.length > 1 && relation.isEmpty) {
-      addError(Error(s"No relation between request pattern described.", position))
+    if (pattern.hasMoreThanOneElement && !relation.isDefined) {
+      addError(Error(s"No relation between request definitions described.", Some(relation.pos)))
     } else {
-      // - All variables are defined?
-      vars.map(x => this.variables getOrElse(x, addError(Error(s"Unknown request description variable $x.", position))))
+      checkIfPatternElementsAreDefined(f.pattern.elements)
     }
 
-    //println(f.pattern)
     // TODO: Check Constraints
   }
 
-  def addWarning(warning: Warning) = this.warnings = this.warnings :+ warning
+  def checkIfPatternElementsAreDefined(elements: List[PatternElement]): Unit = elements.foreach(checkIsDefined)
 
-  def hasWarnings: Boolean = this.warnings.nonEmpty
+  def checkIsDefined(element: PatternElement): Unit = element match {
+    case id: Identifier => checkIsDefined(id)
+    case Repeat(id, _) => checkIsDefined(id)
+    case In(ids) => checkIsDefined(ids)
+    case Not(ids) => checkIsDefined(ids)
+    case _: SingleWildcard =>
+    case _: MultiWildcard =>
+  }
+
+  def checkIsDefined(ids: List[Identifier]): Unit = ids.foreach(checkIsDefined)
+
+  def checkIsDefined(id: Identifier): Unit = this.variables getOrElse(id.name, addError(Error(s"Unknown request description variable ${id.name}.", Some(id.pos))))
 
   def addError(error: Error) = this.errors = this.errors :+ error
-
-  def hasErrors: Boolean = this.errors.nonEmpty
 
 }

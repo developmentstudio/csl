@@ -170,7 +170,7 @@ class VariableParserSpec extends Specification with ParserMatchers {
   "Variable parser" should {
     "parse empty request and response" in {
       val property = "name = request {} => response {}"
-      val result = Variable("name", ObjectValue(), ObjectValue())
+      val result = RequestDefinition("name", ObjectValue(), ObjectValue())
 
       parsers.variable must succeedOn(property).withResult(result)
     }

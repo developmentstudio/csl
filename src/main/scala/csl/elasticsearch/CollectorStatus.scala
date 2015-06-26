@@ -2,6 +2,8 @@ package csl.elasticsearch
 
 import java.io.{File, FileWriter}
 
+import csl.ast.Identifier
+
 import scala.io.Source
 
 class CollectorStatus(file: String) {
@@ -21,11 +23,11 @@ class CollectorStatus(file: String) {
     writer.close()
   }
 
-  def isCompleted(collectionParts: List[String]): Boolean = {
+  def isCompleted(parts: List[String]): Boolean = {
     val file = Source.fromFile(filePath)
     val completed = (for(line <- file.getLines) yield line).toList
     file.close
-    completed.distinct.size == collectionParts.distinct.size
+    completed.distinct.size >= parts.distinct.size
   }
 
   def clear: Unit = new File(filePath).delete()

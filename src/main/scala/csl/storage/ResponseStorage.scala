@@ -3,7 +3,7 @@ package csl.storage
 import java.sql._
 import javax.xml.bind.DatatypeConverter
 
-import csl.ast.Pattern
+import csl.ast.{Identifier, Pattern}
 import csl.elasticsearch.ast.{Relation, Response, Result}
 import csl.elasticsearch.parser.RelationParser
 import org.json4s.JsonAST.JObject
@@ -30,29 +30,35 @@ object ResponseStorage {
 
   def getRelations(pattern: Pattern): List[Relation] = {
     val statement: PreparedStatement = {
-      val variables = pattern.variables.distinct
+
+      val identifiers = pattern.getRequestDefinitionIdentifiers
       var query  = "SELECT DISTINCT(relation) FROM raw_result_set"
-      if (variables.nonEmpty) {
+      if (identifiers.nonEmpty) {
         query += " WHERE "
-        var parts: List[String] = List.empty
-        variables.foreach(_ => {
-          parts = parts :+ "_id in (SELECT _id FROM document_label WHERE variable_name = ?)"
+        var patternPartQuery: List[String] = List.empty
+        identifiers.foreach(_ => {
+          patternPartQuery = patternPartQuery :+ "_id in (SELECT _id FROM document_label WHERE variable_name = ?)"
         })
-        query += parts.mkString(" AND ")
+        query += patternPartQuery.mkString(" AND ")
       }
+
       val statement = connection.prepareStatement(query)
-      if (variables.nonEmpty) {
-        for((variableName, i) <- variables.view.zipWithIndex) statement.setString(i + 1, variableName)
+      if (identifiers.nonEmpty) {
+        val definitionNames = for {
+          id <- identifiers
+        } yield id.name
+
+        for((name, i) <- definitionNames.view.zipWithIndex) statement.setString(i + 1, name)
       }
+
       statement
     }
-    val result = statement.executeQuery()
 
+    val result = statement.executeQuery()
     var relations: List[Relation] = List.empty
     while(result.next()) {
       relations = relations :+ RelationParser.parseJSON(result.getString("relation"))
     }
-
     relations
   }
 

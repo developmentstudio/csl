@@ -18,37 +18,37 @@ class DetectorParser extends JavaTokenParsers
 
   def detectorBody: Parser[List[DetectorElement]] = "{" ~> rep(find | variable) <~ "}"
 
-  def find: Parser[Find] = positioned("find" ~ "{" ~> pattern <~ "}" ^^ {
-    case x => Find(x)
+  def find: Parser[Find] = positioned("find" ~ "{" ~> (pattern ~ relation) <~ "}" ^^ {
+    case p ~ r => Find(p, r)
   })
 
-  def pattern: Parser[Pattern] = positioned(patternDescription ~ relationDescription ^^ {
-    case (v ~ r) => Pattern(v, r.filterNot(_.forall(_.equals(""))))
+  def pattern: Parser[Pattern] = positioned("pattern" ~ "{" ~> repsep(patternElement, "->") <~ "}" ^^ {
+    case elements => Pattern(elements)
   })
-
-  def patternDescription: Parser[List[String]] = "pattern" ~ "{" ~> repsep(ident, "->") <~ "}"
 
   def patternElement: Parser[PatternElement] = (wildcard | in | not | repeat | identifier)
 
-  def identifier: Parser[Identifier] = ident ^^ Identifier
+  def identifier: Parser[Identifier] = positioned(ident ^^ Identifier)
 
-  def in: Parser[In] = "in" ~ "(" ~> repsep(identifier, ",") <~ ")" ^^ In
+  def in: Parser[In] = positioned("in" ~ "(" ~> repsep(identifier, ",") <~ ")" ^^ In)
 
-  def not: Parser[Not] = "not" ~ "(" ~> repsep(identifier, ",") <~ ")" ^^ Not
+  def not: Parser[Not] = positioned("not" ~ "(" ~> repsep(identifier, ",") <~ ")" ^^ Not)
 
-  def repeat: Parser[Repeat] = "repeat" ~ "(" ~> identifier ~ ("," ~> wholeNumber) <~ ")" ^^ {
+  def repeat: Parser[Repeat] = positioned("repeat" ~ "(" ~> identifier ~ ("," ~> wholeNumber) <~ ")" ^^ {
     case (id ~ times) => Repeat(id, times.toInt)
-  }
+  })
 
-  def wildcard: Parser[Wildcard] = ("?" | "*") ^^ {
+  def wildcard: Parser[Wildcard] = positioned(("?" | "*") ^^ {
     case "?" => SingleWildcard()
     case "*" => MultiWildcard()
-  }
+  })
 
-  def relationDescription: Parser[List[String]] = "with" ~ "relation" ~ "on" ~ "{" ~> repsep(propertyKey, "and") <~ "}"
+  def relation: Parser[Relation] = positioned("with" ~ "relation" ~ "on" ~ "{" ~> repsep(propertyKey, "and") <~ "}" ^^ {
+    case keys => Relation(keys.filterNot(_.forall(_.equals(""))))
+  })
 
-  def variable: Parser[Variable] = positioned((ident <~ "=") ~ request ~ ("=>" ~> response) ^^ {
-    case v ~ req ~ res  => Variable(v, req, res)
+  def variable: Parser[RequestDefinition] = positioned((ident <~ "=") ~ request ~ ("=>" ~> response) ^^ {
+    case v ~ req ~ res  => RequestDefinition(v, req, res)
   })
 
   def request: Parser[ObjectValue] = "request" ~> objectValue

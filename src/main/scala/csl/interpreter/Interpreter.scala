@@ -1,7 +1,7 @@
 package csl.interpreter
 
 import csl.ast.Detector
-import csl.elasticsearch.{PatternDetector, RelationCollector, VariableCollector}
+import csl.elasticsearch.{RelationCollector, RequestDefinitionCollector}
 import csl.parser.DetectorParser
 import csl.storage.ResponseStorage
 import csl.typechecker.{Error, TypeChecker, Warning}
@@ -31,7 +31,7 @@ object Interpreter {
 
         ResponseStorage.clear
 
-        val variableCollector = new VariableCollector(detector)
+        val variableCollector = new RequestDefinitionCollector(detector)
         if (variableCollector.collect) {
           println("Variable Collector completed")
         }
@@ -41,8 +41,8 @@ object Interpreter {
           println("Relation Collector completed")
         }
 
-        val patternDetector = new PatternDetector(detector)
-        patternDetector.detect
+//        val patternDetector = new PatternDetector(detector)
+//        patternDetector.detect
 
         val end = System.nanoTime()
         println("Elapsed time: " + (end - start) / 1000000000 + " seconds")
