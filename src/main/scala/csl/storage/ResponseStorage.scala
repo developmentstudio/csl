@@ -3,7 +3,7 @@ package csl.storage
 import java.sql._
 import javax.xml.bind.DatatypeConverter
 
-import csl.ast.{Identifier, Pattern}
+import csl.ast.Pattern
 import csl.elasticsearch.ast.{Relation, Response, Result}
 import csl.elasticsearch.parser.RelationParser
 import org.json4s.JsonAST.JObject
