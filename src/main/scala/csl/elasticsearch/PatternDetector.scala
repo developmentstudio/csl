@@ -6,11 +6,14 @@ import csl.storage.{Document, ResponseStorage}
 class PatternDetector(detector: Detector) {
 
   private val pattern = detector.find.pattern
-  
+  private var totalMatchesFound = 0
+
   def detect: List[Document] = {
     val relations = ResponseStorage.getRelations(pattern)
     relations.flatMap(relation => detect(ResponseStorage.getDocumentsBy(relation)))
   }
+
+  def totalMatches: Int = totalMatchesFound
 
   def detect(documents: List[Document]): List[Document] = {
 
@@ -19,6 +22,7 @@ class PatternDetector(detector: Detector) {
     var startMatch = -1
     var multiWildcardActive = false
     var result: List[Document] = List.empty
+    var matchCount= 0
 
     while(isValidDocumentIndex(documents, documentIndex)) {
 
@@ -34,6 +38,7 @@ class PatternDetector(detector: Detector) {
             multiWildcardActive = true
           } else {
             result = (result ::: getPatternMatchRelatedDocuments(documents, startMatch, documentIndex)).distinct
+            matchCount += 1
 
             documentIndex = startMatch
             elementIndex = 0
@@ -46,6 +51,7 @@ class PatternDetector(detector: Detector) {
             multiWildcardActive = false
           } else {
             result = (result ::: getPatternMatchRelatedDocuments(documents, startMatch, documentIndex)).distinct
+            matchCount += 1
 
             documentIndex = startMatch
             elementIndex = 0
@@ -68,6 +74,7 @@ class PatternDetector(detector: Detector) {
       }
 
     }
+    totalMatchesFound += matchCount
     result
   }
 

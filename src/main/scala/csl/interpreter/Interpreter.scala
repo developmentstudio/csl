@@ -43,9 +43,8 @@ object Interpreter {
 
         val patternDetector = new PatternDetector(detector)
         val matchedDocuments = patternDetector.detect
+        println(patternDetector.totalMatches + " matches found existing of a total of " + matchedDocuments.length + " documents.")
         println(matchedDocuments)
-        println(matchedDocuments.size)
-
 
         val end = System.nanoTime()
         println("Elapsed time: " + (end - start) / 1000000000 + " seconds")
