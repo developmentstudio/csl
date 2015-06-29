@@ -6,23 +6,11 @@ import csl.storage.{Document, ResponseStorage}
 class PatternDetector(detector: Detector) {
 
   private val pattern = detector.find.pattern
-
-
-//  private var totalMatches = 0
-//  private var matchedDocuments: List[Document] = List.empty
-
-//  def detect: Unit = {
-//    val relations = ResponseStorage.getRelations(pattern)
-//    relations.foreach(relation => {
-//      val documents = ResponseStorage.getDocumentsBy(relation)
-//      println(documents)
-//      detect(documents)
-//    })
-//    println("Found pattern " + pattern.elements.mkString(" -> ") + ": " + totalMatches + " times.")
-//    println("Total documents related to result: " + matchedDocuments.distinct.length)
-//  }
-
-//  var documents: List[Document] = List.empty
+  
+  def detect: List[Document] = {
+    val relations = ResponseStorage.getRelations(pattern)
+    relations.flatMap(relation => detect(ResponseStorage.getDocumentsBy(relation)))
+  }
 
   def detect(documents: List[Document]): List[Document] = {
 

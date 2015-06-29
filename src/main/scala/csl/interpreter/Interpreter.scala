@@ -1,7 +1,7 @@
 package csl.interpreter
 
 import csl.ast.Detector
-import csl.elasticsearch.{RelationCollector, RequestDefinitionCollector}
+import csl.elasticsearch.{PatternDetector, RelationCollector, RequestDefinitionCollector}
 import csl.parser.DetectorParser
 import csl.storage.ResponseStorage
 import csl.typechecker.{Error, TypeChecker, Warning}
@@ -41,8 +41,11 @@ object Interpreter {
           println("Relation Collector completed")
         }
 
-//        val patternDetector = new PatternDetector(detector)
-//        patternDetector.detect
+        val patternDetector = new PatternDetector(detector)
+        val matchedDocuments = patternDetector.detect
+        println(matchedDocuments)
+        println(matchedDocuments.size)
+
 
         val end = System.nanoTime()
         println("Elapsed time: " + (end - start) / 1000000000 + " seconds")
