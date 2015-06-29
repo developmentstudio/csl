@@ -24,19 +24,15 @@ class PatternDetector(detector: Detector) {
 
 //  var documents: List[Document] = List.empty
 
-  def detect(documents: List[Document]): Unit = {
+  def detect(documents: List[Document]): List[Document] = {
 
     var documentIndex = 0
     var elementIndex = 0
     var startMatch = -1
-    var endMatch = -1
-
     var multiWildcardActive = false
+    var result: List[Document] = List.empty
 
-
-
-
-    while(isValidDocumentIndex(documents, documentIndex + 1)) {
+    while(isValidDocumentIndex(documents, documentIndex)) {
 
       val patternElement = pattern.elements(elementIndex)
       if (matchesPatternElement(documents, documentIndex, patternElement)) {
@@ -44,32 +40,32 @@ class PatternDetector(detector: Detector) {
           startMatch = documentIndex
         }
 
-        documentIndex += 1
-
-        // TODO: Check end of pattern.
-
         if (isMultiWildcard(patternElement)) {
-          // TODO: Implement method isThereARemainingNonWildcardInPattern()
-          // TODO: Implement method getNextNonWildcardIndex()
           if (isThereARemainingNonWildcardInPattern(pattern.elements, elementIndex)) {
-            elementIndex = getNextNonWildcardIndex(elementIndex)
+            elementIndex = getNextNonWildcardIndex(pattern.elements, elementIndex)
             multiWildcardActive = true
           } else {
-            // Match!!
-            // TODO: Save matching documents.
-            // TODO: Reset counters and flags.
+            result = (result ::: getPatternMatchRelatedDocuments(documents, startMatch, documentIndex)).distinct
+
+            documentIndex = startMatch
+            elementIndex = 0
+            startMatch = -1
+            multiWildcardActive = false
           }
         } else {
           if (isThereARemainingNonWildcardInPattern(pattern.elements, elementIndex)) {
             elementIndex += 1
             multiWildcardActive = false
           } else {
-            // Match!!
-            // TODO: Save matching documents.
-            // TODO: Reset counters and flags.
+            result = (result ::: getPatternMatchRelatedDocuments(documents, startMatch, documentIndex)).distinct
+
+            documentIndex = startMatch
+            elementIndex = 0
+            startMatch = -1
+            multiWildcardActive = false
           }
         }
-
+        documentIndex += 1
       } else
       if (multiWildcardActive) {
         documentIndex += 1
@@ -81,17 +77,17 @@ class PatternDetector(detector: Detector) {
         }
         elementIndex = 0
         startMatch = -1
-        endMatch = -1
       }
 
     }
+    result
   }
 
   def matchesPatternElement(documents: List[Document], documentIndex: Int, element: PatternElement): Boolean = {
     element match {
       case e: Identifier => matchesIdentifier(documents(documentIndex), e)
-      case e: In => matchesIn(document, e)
-      case e: Not => matchesNot(document, e)
+      case e: In => matchesIn(documents(documentIndex), e)
+      case e: Not => matchesNot(documents(documentIndex), e)
       case e: Repeat => matchesRepeat(documents, documentIndex, e)
       case e: SingleWildcard => true
       case e: MultiWildcard => true
@@ -131,6 +127,34 @@ class PatternDetector(detector: Detector) {
   def isMultiWildcard(element: PatternElement): Boolean = element match {
     case MultiWildcard() =>  true
     case _ => false
+  }
+
+  def getPatternMatchRelatedDocuments(documents: List[Document], firstIndex: Int, lastIndex: Int): List[Document] = {
+    List.range(firstIndex, lastIndex + 1).map(i => documents(i))
+  }
+
+  def isThereARemainingNonWildcardInPattern(elements: List[PatternElement], elementIndex: Int): Boolean = {
+    List.range(elementIndex + 1, elements.length).exists(i => elements(i) match {
+      case e: Identifier => true
+      case e: In => true
+      case e: Not => true
+      case e: Repeat => true
+      case e: SingleWildcard => false
+      case e: MultiWildcard => false
+    })
+  }
+
+  def getNextNonWildcardIndex(elements: List[PatternElement], elementIndex: Int): Int = {
+    List.range(elementIndex + 1, elements.length).find(i => elements(i) match {
+      case e: Identifier => true
+      case e: In => true
+      case e: Not => true
+      case e: Repeat => true
+      case e: SingleWildcard => false
+      case e: MultiWildcard => false
+    }).getOrElse(throw new Exception(
+      "No non wildcard pattern element found. Please use method isThereARemainingNonWildcardInPattern to check before calling this method."
+    ))
   }
 
 }

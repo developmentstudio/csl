@@ -16,12 +16,17 @@ class PatterDetectorSpec extends Specification {
       ObjectValue(List.empty),
       ObjectValue(List.empty)
     ),
+    RequestDefinition("C",
+      ObjectValue(List.empty),
+      ObjectValue(List.empty)
+    ),
     Find(
       Pattern(
         List(
-          In(List(Identifier("A"))),
+          In(List(Identifier("A"), Identifier("B"))),
           Not(List(Identifier("B"))),
-          Repeat(Identifier("A"), 1)
+          SingleWildcard(),
+          Identifier("C")
         )
       ),
       Relation(List.empty)
@@ -29,13 +34,6 @@ class PatterDetectorSpec extends Specification {
   ))
 
   val patternDetector = new PatternDetector(detector)
-  patternDetector.documents = List(
-    Document("20141016", "accesslog", "AU2utQeqH90A4sW5rfW0", "2014-10-15 09:25:38.0", List("A")),
-    Document("20141016", "accesslog", "AU2utQjyH90A4sW5rfaG", "2014-10-15 09:25:58.0", List("A")),
-    Document("20141016", "accesslog", "AU2utQuLH90A4sW5rfgH", "2014-10-15 09:26:35.0", List("A")),
-    Document("20141016", "accesslog", "AU2utQvYH90A4sW5rfg8", "2014-10-15 09:26:41.0", List("A")),
-    Document("20141016", "accesslog", "AU2utQvYH90A4sW5rfg9", "2014-10-15 09:26:41.0", List("A"))
-  )
 
   "Pattern detector method matchesIdentifier" should {
     "match" in {
@@ -125,6 +123,29 @@ class PatterDetectorSpec extends Specification {
     }
   }
 
+  "Method detect" should {
+    "detect pattern" in {
+      val documents = List(
+        Document("", "", "1", "", List("A")),
+        Document("", "", "2", "", List("C")),
+        Document("", "", "3", "", List("B")),
+        Document("", "", "4", "", List("C")),
+        Document("", "", "5", "", List("A")),
+        Document("", "", "6", "", List("C"))
+      )
+      val result = List(
+        Document("", "", "1", "", List("A")),
+        Document("", "", "2", "", List("C")),
+        Document("", "", "3", "", List("B")),
+        Document("", "", "4", "", List("C")),
+        Document("", "", "5", "", List("A")),
+        Document("", "", "6", "", List("C"))
+      )
+
+      patternDetector.detect(documents) mustEqual result
+    }
+  }
+
   "Helper Methods" should {
     "detect an invalid document index" in {
       val documents = List.empty
@@ -141,7 +162,64 @@ class PatterDetectorSpec extends Specification {
 
       patternDetector.isValidDocumentIndex(documents, index) mustEqual true
     }
+
+    "get pattern match related documents" in {
+      val documents = List(
+        Document("", "", "", "", List("A")),
+        Document("", "", "", "", List("B")),
+        Document("", "", "", "", List("C")),
+        Document("", "", "", "", List("D")),
+        Document("", "", "", "", List("E")),
+        Document("", "", "", "", List("F"))
+      )
+      val firstIndex = 2
+      val lastIndex = 4
+      val result = List(
+        Document("", "", "", "", List("C")),
+        Document("", "", "", "", List("D")),
+        Document("", "", "", "", List("E"))
+      )
+
+      patternDetector.getPatternMatchRelatedDocuments(documents, firstIndex, lastIndex) mustEqual result
+    }
+
+    "see that their is a remaining non wildcard in pattern" in {
+      val elements = List(
+        Identifier("A"),
+        MultiWildcard(),
+        Identifier("C")
+      )
+      val elementIndex = 1
+
+      patternDetector.isThereARemainingNonWildcardInPattern(elements, elementIndex) mustEqual true
+    }
+
+    "see that their no remaining non wildcard in pattern" in {
+      val elements = List(
+        Identifier("A"),
+        MultiWildcard(),
+        SingleWildcard()
+      )
+      val elementIndex = 1
+
+      patternDetector.isThereARemainingNonWildcardInPattern(elements, elementIndex) mustEqual false
+    }
+
+    "get index of next non wildcard in pattern" in {
+      val elements = List(
+        Identifier("A"),
+        MultiWildcard(),
+        Identifier("C")
+      )
+      val elementIndex = 1
+
+      patternDetector.getNextNonWildcardIndex(elements, elementIndex) mustEqual 2
+    }
+
   }
+
+
+
 
   // TODO: Write missing tests.
 
