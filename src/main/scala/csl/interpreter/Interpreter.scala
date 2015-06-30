@@ -24,7 +24,7 @@ object Interpreter {
         warnings.foreach(println)
 
         if (errors.nonEmpty) {
-          System.exit(500)
+          System.exit(0)
         }
 
         println(detector)
@@ -49,7 +49,7 @@ object Interpreter {
         val end = System.nanoTime()
         println("Elapsed time: " + (end - start) / 1000000000 + " seconds")
 
-        System.exit(200)
+        System.exit(0)
 
       case None => println("Parser failed.")
     }

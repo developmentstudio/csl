@@ -8,8 +8,10 @@ object ResponseParser
 {
   implicit val formats = DefaultFormats
 
+  val TimeToWaitInMilliseconds = 100
+
   def parseJSON(json: String): Response = {
-    Thread.sleep(100)
+    Thread.sleep(TimeToWaitInMilliseconds)
     parse(json).extract[Response]
   }
 }

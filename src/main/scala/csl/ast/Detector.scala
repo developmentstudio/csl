@@ -74,7 +74,7 @@ case class Relation(keys: List[String]) extends Positional
   def isDefined: Boolean = keys.nonEmpty
 }
 
-sealed trait PatternElement extends Positional {}
+sealed trait PatternElement extends Positional
 case class Identifier(name: String) extends PatternElement
 {
   override def toString: String = name

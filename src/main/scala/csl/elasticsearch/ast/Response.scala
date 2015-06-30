@@ -1,7 +1,7 @@
 package csl.elasticsearch.ast
 
-import org.json4s._
-import org.json4s.jackson.JsonMethods._
+import org.json4s.JObject
+import org.json4s.jackson.JsonMethods.{compact, render}
 
 case class Response(_scroll_id: String, took: String, timed_out: Boolean, _shards: Shards, hits: Hits)
 {
@@ -23,6 +23,7 @@ case class Result(_index: String, _type: String, _id: String, _score: Double, _s
 
   def sourceAsJson: String = compact(render(_source))
 
+  @throws(classOf[Exception])
   private def flattenProperty(key: String, value: Any, prefix: String = ""): Unit = {
     value match {
       case v: String => properties = properties + (prefix -> v)

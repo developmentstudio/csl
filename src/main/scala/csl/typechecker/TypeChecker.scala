@@ -1,6 +1,6 @@
 package csl.typechecker
 
-import csl.ast._
+import csl.ast.{Detector, DetectorElement, Find, Identifier, In, MultiWildcard, Not, PatternElement, Repeat, RequestDefinition, SingleWildcard}
 
 class TypeChecker {
 
@@ -63,8 +63,10 @@ class TypeChecker {
 
   def checkIsDefined(ids: List[Identifier]): Unit = ids.foreach(checkIsDefined)
 
-  def checkIsDefined(id: Identifier): Unit = this.variables getOrElse(id.name, addError(Error(s"Unknown request description variable ${id.name}.", Some(id.pos))))
+  def checkIsDefined(id: Identifier): Unit = {
+    this.variables getOrElse(id.name, addError(Error(s"Unknown request description variable ${id.name}.", Some(id.pos))))
+  }
 
-  def addError(error: Error) = this.errors = this.errors :+ error
+  def addError(error: Error): Unit = this.errors = this.errors :+ error
 
 }

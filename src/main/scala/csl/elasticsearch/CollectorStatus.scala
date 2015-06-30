@@ -8,14 +8,14 @@ class CollectorStatus(file: String) {
 
   private val filePath: String = "./src/main/resources/" + file
 
-  def init = {
+  def init: Unit = {
     this.clear
 
     val writer = new FileWriter(filePath, true)
     writer.close()
   }
 
-  def setCompleted(identifier: String) = {
+  def setCompleted(identifier: String): Unit = {
     val writer = new FileWriter(filePath, true)
     writer.write(s"$identifier\n")
     writer.close()

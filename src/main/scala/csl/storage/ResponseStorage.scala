@@ -1,6 +1,6 @@
 package csl.storage
 
-import java.sql._
+import java.sql.{DriverManager, PreparedStatement, Timestamp}
 import javax.xml.bind.DatatypeConverter
 
 import csl.ast.Pattern
@@ -64,7 +64,8 @@ object ResponseStorage {
 
   def getDocumentsBy(relation: Relation): List[Document] = {
     val statement = connection.prepareStatement(
-      "SELECT raw_result_set._index, raw_result_set._type, raw_result_set._id, raw_result_set.relation, raw_result_set.timestamp, document_label.variable_name " +
+      "SELECT raw_result_set._index, raw_result_set._type, raw_result_set._id, raw_result_set.relation, " +
+      "       raw_result_set.timestamp, document_label.variable_name " +
       "FROM raw_result_set " +
       "LEFT JOIN document_label ON raw_result_set._id = document_label._id " +
       "WHERE raw_result_set.relation = ?" +
@@ -161,8 +162,7 @@ object ResponseStorage {
 
 }
 
-case class Document(_index: String, _type: String, _id: String, _timestamp: String, var labels: List[String])
-{
+case class Document(_index: String, _type: String, _id: String, _timestamp: String, var labels: List[String]) {
   def addLabel(label: String): Unit = this.labels = this.labels :+ label
 
   def hasLabel(label: String): Boolean = this.labels contains(label)
