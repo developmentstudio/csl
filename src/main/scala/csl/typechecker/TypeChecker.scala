@@ -1,6 +1,5 @@
 package csl.typechecker
 
-import csl.ast
 import csl.ast._
 
 class TypeChecker {

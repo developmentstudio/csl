@@ -72,13 +72,10 @@ class RelationCollector(detector: Detector)
 
   private def waitForDocumentCollectionToComplete: Unit =
   {
-//    print("Waiting") // TODO: Remove
     val parts = this.relations map(_.toString)
     while (!this.status.isCompleted(parts)) {
-//      print(".") // TODO: Remove
       TimeUnit.SECONDS.sleep(1);
     }
-//    println(".") // TODO: Remove
     this.status.clear
   }
 

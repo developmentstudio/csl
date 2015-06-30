@@ -2,8 +2,6 @@ package csl.elasticsearch
 
 import java.io.{File, FileWriter}
 
-import csl.ast.Identifier
-
 import scala.io.Source
 
 class CollectorStatus(file: String) {

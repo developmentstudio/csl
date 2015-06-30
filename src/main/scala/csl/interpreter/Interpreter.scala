@@ -31,8 +31,8 @@ object Interpreter {
 
         ResponseStorage.clear
 
-        val variableCollector = new RequestDefinitionCollector(detector)
-        if (variableCollector.collect) {
+        val requestDefinitionCollector = new RequestDefinitionCollector(detector)
+        if (requestDefinitionCollector.collect) {
           println("Variable Collector completed")
         }
 

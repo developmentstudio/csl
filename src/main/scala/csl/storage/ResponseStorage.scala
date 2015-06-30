@@ -161,7 +161,6 @@ object ResponseStorage {
 
 }
 
-
 case class Document(_index: String, _type: String, _id: String, _timestamp: String, var labels: List[String])
 {
   def addLabel(label: String): Unit = this.labels = this.labels :+ label

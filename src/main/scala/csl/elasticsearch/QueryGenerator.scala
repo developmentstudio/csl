@@ -1,13 +1,9 @@
 package csl.elasticsearch
 
-import csl.ast._
+import csl.ast.Property
 import csl.elasticsearch.ast.Filter
 
-sealed trait QueryGenerator {
-  def generate(properties: List[Property]): String
-}
-
-class FilterQueryGenerator extends QueryGenerator
+class FilterQueryGenerator
 {
   def generate(properties: List[Property]): Query = {
     val filters = properties map(createFilter)

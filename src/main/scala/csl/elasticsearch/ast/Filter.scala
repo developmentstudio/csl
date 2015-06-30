@@ -1,6 +1,6 @@
 package csl.elasticsearch.ast
 
-import csl.ast.{DateValue, NumberValue, ObjectValue, Property, RegexValue, StringValue, Value}
+import csl.ast.{DateValue, NumberValue, ObjectValue, Property, RegexValue, StringValue}
 
 case class Filter(p: Property) {
 

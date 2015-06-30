@@ -2,7 +2,7 @@ package csl.elasticsearch
 
 import java.util.concurrent.TimeUnit
 
-import csl.ast.{Identifier, Detector, RequestDefinition}
+import csl.ast.{Detector, Identifier, RequestDefinition}
 import csl.elasticsearch.parser.ResponseParser
 import csl.storage.ResponseStorage
 import wabisabi.{Scan, SearchUriParameters}
@@ -64,14 +64,10 @@ class RequestDefinitionCollector(detector: Detector)
 
   private def waitForDocumentCollectionToComplete: Unit =
   {
-//    print("Waiting") // TODO: Remove
-
     val parts = this.detector.find.pattern.getRequestDefinitionIdentifiers.map(_.name)
     while (!this.status.isCompleted(parts)) {
-//      print(".") // TODO: Remove
       TimeUnit.SECONDS.sleep(1);
     }
-//    println(".") // TODO: Remove
     this.status.clear
   }
 }
