@@ -23,7 +23,7 @@ object Interpreter {
 
     val patternDetector = new PatternDetector(detector)
     val documents = patternDetector.detect
-    println(patternDetector.totalMatches + " matches found existent of a total of " + documents.length + " documents.")
+    println(patternDetector.totalMatches + " matches found existing of a total of " + documents.length + " documents.")
 
     // TODO: Handle result / export result (CSV, ES-QUERY)
     documents.foreach(d => println(d.source("request.cookies.Coolblue-Session").getOrElse("Property not found")))

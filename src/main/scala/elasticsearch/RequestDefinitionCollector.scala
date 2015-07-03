@@ -29,8 +29,6 @@ class RequestDefinitionCollector(detector: Detector) {
 
   private def search(definition: RequestDefinition): Unit = {
     val query = this.generator.generate(definition.properties)
-    println(query)
-
     val request = client.search(index, query, uriParameters = SearchUriParameters(searchType = Some(Scan), scroll = Some("10m")))
     request onComplete {
       case Success(r) =>

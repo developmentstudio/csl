@@ -4,8 +4,7 @@ import elasticsearch.ast.Response
 import org.json4s.DefaultFormats
 import org.json4s.jackson.JsonMethods.parse
 
-object ResponseParser
-{
+object ResponseParser {
   implicit val formats = DefaultFormats
 
   val TimeToWaitInMilliseconds = 100

@@ -5,8 +5,7 @@ import elasticsearch.ast.Relation
 import org.json4s.DefaultFormats
 import org.json4s.jackson.JsonMethods.parse
 
-object RelationParser
-{
+object RelationParser {
   implicit val formats = DefaultFormats
 
   def parseJSON(json: String): Relation = {
