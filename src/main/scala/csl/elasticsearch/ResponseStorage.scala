@@ -1,10 +1,10 @@
-package csl.storage
+package csl.elasticsearch
 
 import java.sql.{DriverManager, PreparedStatement, Timestamp}
 import javax.xml.bind.DatatypeConverter
 
 import csl.ast.Pattern
-import csl.elasticsearch.ast.{Relation, Response, Result}
+import csl.elasticsearch.ast.{Document, Relation, Response, Result}
 import csl.elasticsearch.parser.RelationParser
 import org.json4s.JsonAST.JObject
 import org.json4s.jackson.JsonMethods.{compact, render}
@@ -65,7 +65,7 @@ object ResponseStorage {
   def getDocumentsBy(relation: Relation): List[Document] = {
     val statement = connection.prepareStatement(
       "SELECT raw_result_set._index, raw_result_set._type, raw_result_set._id, raw_result_set.relation, " +
-      "       raw_result_set.timestamp, document_label.variable_name " +
+      "       raw_result_set.timestamp, raw_result_set.body, document_label.variable_name " +
       "FROM raw_result_set " +
       "LEFT JOIN document_label ON raw_result_set._id = document_label._id " +
       "WHERE raw_result_set.relation = ?" +
@@ -83,6 +83,7 @@ object ResponseStorage {
       val relation = result.getString("relation")
       val timestamp = result.getString("timestamp")
       val variable_name = result.getString("variable_name")
+      val body = result.getString("body")
 
       docMap get _id match {
         case Some(d) => {
@@ -91,9 +92,9 @@ object ResponseStorage {
         }
         case None => {
           if (variable_name != null) {
-            docMap = docMap + (_id -> Document(_index, _type, _id, timestamp, List(variable_name)))
+            docMap = docMap + (_id -> Document(_index, _type, _id, timestamp, List(variable_name), body))
           } else {
-            docMap = docMap + (_id -> Document(_index, _type, _id, timestamp, List.empty))
+            docMap = docMap + (_id -> Document(_index, _type, _id, timestamp, List.empty, body))
           }
         }
       }
@@ -107,8 +108,8 @@ object ResponseStorage {
   def save(response: Response, label: Option[String], relationKeys: List[String]): Unit = {
     if (response.hasHits) {
       val resultSetQuery = connection.prepareStatement(
-        "INSERT INTO raw_result_set (_index, _type, _id, relation, timestamp) " +
-          "VALUES (?, ?, ?, ?, ?) " +
+        "INSERT INTO raw_result_set (_index, _type, _id, relation, timestamp, body) " +
+          "VALUES (?, ?, ?, ?, ?, ?) " +
           "ON DUPLICATE KEY UPDATE _id = _id"
       )
 
@@ -120,13 +121,14 @@ object ResponseStorage {
 
       response.hits.hits.foreach(r => {
         val relationInformation = generateRelation(r, relationKeys)
-
         val date = DatatypeConverter.parseDateTime(r.source("request.timestamp").get.toString)
+
         resultSetQuery.setString(1, r._index)
         resultSetQuery.setString(2, r._type)
         resultSetQuery.setString(3, r._id)
         resultSetQuery.setString(4, relationInformation)
         resultSetQuery.setTimestamp(5, new Timestamp(date.getTime.getTime))
+        resultSetQuery.setString(6, r.sourceAsJson)
         resultSetQuery.addBatch()
 
         label match {
@@ -160,10 +162,4 @@ object ResponseStorage {
     compact(render(new JObject(rel)))
   }
 
-}
-
-case class Document(_index: String, _type: String, _id: String, _timestamp: String, var labels: List[String]) {
-  def addLabel(label: String): Unit = this.labels = this.labels :+ label
-
-  def hasLabel(label: String): Boolean = this.labels contains(label)
 }

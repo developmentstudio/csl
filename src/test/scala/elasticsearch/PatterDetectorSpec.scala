@@ -2,7 +2,7 @@ package elasticsearch
 
 import csl.ast._
 import csl.elasticsearch.PatternDetector
-import csl.storage.Document
+import csl.elasticsearch.ast.Document
 import org.specs2.mutable.Specification
 
 class PatterDetectorSpec extends Specification {
@@ -37,14 +37,14 @@ class PatterDetectorSpec extends Specification {
 
   "Pattern detector method matchesIdentifier" should {
     "match" in {
-      val document = Document("", "", "", "", List("A", "B"))
+      val document = Document("", "", "", "", List("A", "B"), "")
       val element = Identifier("A")
 
       patternDetector.matchesIdentifier(document, element) mustEqual true
     }
 
     "no match" in {
-      val document = Document("", "", "", "", List("A", "B"))
+      val document = Document("", "", "", "", List("A", "B"), "")
       val element = Identifier("C")
 
       patternDetector.matchesIdentifier(document, element) mustEqual false
@@ -53,14 +53,14 @@ class PatterDetectorSpec extends Specification {
 
   "Pattern detector method matchesIn" should {
     "match" in {
-      val document = Document("", "", "", "", List("A", "B"))
+      val document = Document("", "", "", "", List("A", "B"), "")
       val element = In(List(Identifier("A"), Identifier("C")))
 
       patternDetector.matchesIn(document, element) mustEqual true
     }
 
     "no match" in {
-      val document = Document("", "", "", "", List("A", "B"))
+      val document = Document("", "", "", "", List("A", "B"), "")
       val element = In(List(Identifier("C")))
 
       patternDetector.matchesIn(document, element) mustEqual false
@@ -69,14 +69,14 @@ class PatterDetectorSpec extends Specification {
 
   "Pattern detector method matchesNot" should {
     "match" in {
-      val document = Document("", "", "", "", List("A", "B"))
+      val document = Document("", "", "", "", List("A", "B"), "")
       val element = Not(List(Identifier("C"), Identifier("D")))
 
       patternDetector.matchesNot(document, element) mustEqual true
     }
 
     "no match" in {
-      val document = Document("", "", "", "", List("A", "B"))
+      val document = Document("", "", "", "", List("A", "B"), "")
       val element = Not(List(Identifier("B"), Identifier("C")))
 
       patternDetector.matchesNot(document, element) mustEqual false
@@ -86,16 +86,16 @@ class PatterDetectorSpec extends Specification {
   "Pattern detector method matchesRepeat" should {
     "match" in {
       val documents = List(
-        Document("", "", "", "", List("A", "B")),
-        Document("", "", "", "", List("A", "B")),
-        Document("", "", "", "", List("A", "B")),
-        Document("", "", "", "", List("A", "B")),
-        Document("", "", "", "", List("A", "B")),
-        Document("", "", "", "", List("A", "B")),
-        Document("", "", "", "", List("A", "B")),
-        Document("", "", "", "", List("A", "B")),
-        Document("", "", "", "", List("A", "B")),
-        Document("", "", "", "", List("A", "B"))
+        Document("", "", "", "", List("A", "B"), ""),
+        Document("", "", "", "", List("A", "B"), ""),
+        Document("", "", "", "", List("A", "B"), ""),
+        Document("", "", "", "", List("A", "B"), ""),
+        Document("", "", "", "", List("A", "B"), ""),
+        Document("", "", "", "", List("A", "B"), ""),
+        Document("", "", "", "", List("A", "B"), ""),
+        Document("", "", "", "", List("A", "B"), ""),
+        Document("", "", "", "", List("A", "B"), ""),
+        Document("", "", "", "", List("A", "B"), "")
       )
       val index = 0
       val element = Repeat(Identifier("B"), 5)
@@ -105,16 +105,16 @@ class PatterDetectorSpec extends Specification {
 
     "no match" in {
       val documents = List(
-        Document("", "", "", "", List("A", "B")),
-        Document("", "", "", "", List("A", "B")),
-        Document("", "", "", "", List("A", "B")),
-        Document("", "", "", "", List("A", "B")),
-        Document("", "", "", "", List("A", "C")),
-        Document("", "", "", "", List("A", "B")),
-        Document("", "", "", "", List("A", "B")),
-        Document("", "", "", "", List("A", "B")),
-        Document("", "", "", "", List("A", "B")),
-        Document("", "", "", "", List("A", "B"))
+        Document("", "", "", "", List("A", "B"), ""),
+        Document("", "", "", "", List("A", "B"), ""),
+        Document("", "", "", "", List("A", "B"), ""),
+        Document("", "", "", "", List("A", "B"), ""),
+        Document("", "", "", "", List("A", "C"), ""),
+        Document("", "", "", "", List("A", "B"), ""),
+        Document("", "", "", "", List("A", "B"), ""),
+        Document("", "", "", "", List("A", "B"), ""),
+        Document("", "", "", "", List("A", "B"), ""),
+        Document("", "", "", "", List("A", "B"), "")
       )
       val index = 0
       val element = Repeat(Identifier("B"), 10)
@@ -126,20 +126,20 @@ class PatterDetectorSpec extends Specification {
   "Method detect" should {
     "detect pattern" in {
       val documents = List(
-        Document("", "", "1", "", List("A")),
-        Document("", "", "2", "", List("C")),
-        Document("", "", "3", "", List("B")),
-        Document("", "", "4", "", List("C")),
-        Document("", "", "5", "", List("A")),
-        Document("", "", "6", "", List("C"))
+        Document("", "", "1", "", List("A"), ""),
+        Document("", "", "2", "", List("C"), ""),
+        Document("", "", "3", "", List("B"), ""),
+        Document("", "", "4", "", List("C"), ""),
+        Document("", "", "5", "", List("A"), ""),
+        Document("", "", "6", "", List("C"), "")
       )
       val result = List(
-        Document("", "", "1", "", List("A")),
-        Document("", "", "2", "", List("C")),
-        Document("", "", "3", "", List("B")),
-        Document("", "", "4", "", List("C")),
-        Document("", "", "5", "", List("A")),
-        Document("", "", "6", "", List("C"))
+        Document("", "", "1", "", List("A"), ""),
+        Document("", "", "2", "", List("C"), ""),
+        Document("", "", "3", "", List("B"), ""),
+        Document("", "", "4", "", List("C"), ""),
+        Document("", "", "5", "", List("A"), ""),
+        Document("", "", "6", "", List("C"), "")
       )
 
       patternDetector.detect(documents) mustEqual result
@@ -156,7 +156,7 @@ class PatterDetectorSpec extends Specification {
 
     "detect a valid document index" in {
       val documents = List(
-        Document("", "", "", "", List.empty)
+        Document("", "", "", "", List.empty, "")
       )
       val index = 0
 
@@ -165,19 +165,19 @@ class PatterDetectorSpec extends Specification {
 
     "get pattern match related documents" in {
       val documents = List(
-        Document("", "", "", "", List("A")),
-        Document("", "", "", "", List("B")),
-        Document("", "", "", "", List("C")),
-        Document("", "", "", "", List("D")),
-        Document("", "", "", "", List("E")),
-        Document("", "", "", "", List("F"))
+        Document("", "", "", "", List("A"), ""),
+        Document("", "", "", "", List("B"), ""),
+        Document("", "", "", "", List("C"), ""),
+        Document("", "", "", "", List("D"), ""),
+        Document("", "", "", "", List("E"), ""),
+        Document("", "", "", "", List("F"), "")
       )
       val firstIndex = 2
       val lastIndex = 4
       val result = List(
-        Document("", "", "", "", List("C")),
-        Document("", "", "", "", List("D")),
-        Document("", "", "", "", List("E"))
+        Document("", "", "", "", List("C"), ""),
+        Document("", "", "", "", List("D"), ""),
+        Document("", "", "", "", List("E"), "")
       )
 
       patternDetector.getPatternMatchRelatedDocuments(documents, firstIndex, lastIndex) mustEqual result

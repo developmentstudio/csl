@@ -4,7 +4,6 @@ import java.util.concurrent.TimeUnit
 
 import csl.ast.{Detector, Identifier, RequestDefinition}
 import csl.elasticsearch.parser.ResponseParser
-import csl.storage.ResponseStorage
 import wabisabi.{Scan, SearchUriParameters}
 
 import scala.concurrent.ExecutionContext.Implicits.global

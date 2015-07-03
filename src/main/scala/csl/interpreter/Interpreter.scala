@@ -1,13 +1,11 @@
 package csl.interpreter
 
 import csl.ast.Detector
-import csl.elasticsearch.{PatternDetector, RelationCollector, RequestDefinitionCollector}
+import csl.elasticsearch.{PatternDetector, RelationCollector, RequestDefinitionCollector, ResponseStorage}
 import csl.parser.DetectorParser
-import csl.storage.ResponseStorage
 import csl.typechecker.{Error, TypeChecker, Warning}
 
 import scala.io.Source
-
 
 object Interpreter {
 
@@ -44,7 +42,12 @@ object Interpreter {
         val patternDetector = new PatternDetector(detector)
         val matchedDocuments = patternDetector.detect
         println(patternDetector.totalMatches + " matches found existing of a total of " + matchedDocuments.length + " documents.")
-        println(matchedDocuments)
+
+
+        // TODO: Handle result / export result (JSON, XML, CSV, ES-QUERY, HTML TABLE)
+        matchedDocuments.foreach(d => {
+          println(d.source("request.timestamp").getOrElse(""))
+        })
 
         val end = System.nanoTime()
         println("Elapsed time: " + (end - start) / 1000000000 + " seconds")

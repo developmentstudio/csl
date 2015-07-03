@@ -1,7 +1,7 @@
 package csl.elasticsearch
 
-import csl.ast.{Detector, PatternElement, Identifier, In, Not, Repeat, MultiWildcard, SingleWildcard}
-import csl.storage.{Document, ResponseStorage}
+import csl.ast.{Detector, Identifier, In, MultiWildcard, Not, PatternElement, Repeat, SingleWildcard}
+import csl.elasticsearch.ast.Document
 
 class PatternDetector(detector: Detector) {
 

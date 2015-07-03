@@ -6,18 +6,19 @@ sealed trait DetectorElement extends Positional
 
 case class Detector(label: String, body: List[DetectorElement]) extends Positional {
   def definitions: List[RequestDefinition] = body.collect{ case v: RequestDefinition => v }
+
   def definition(name: String): Option[RequestDefinition] = definitions.find({
     case rd: RequestDefinition if rd.name == name => true
     case _ => false
   })
+
   def find: Find = body.collectFirst{ case f: Find => f } match {
     case Some(f) => f
     case None => throw new Exception("Typechecker failed on checking 'Find'.")
   }
 }
 
-case class RequestDefinition(name: String, request: ObjectValue, response: ObjectValue) extends DetectorElement
-{
+case class RequestDefinition(name: String, request: ObjectValue, response: ObjectValue) extends DetectorElement {
   val properties: List[Property] = flatten(request, "request.") ++ flatten(response, "response.")
 
   private def flatten(value: ObjectValue, prefix: String = ""): List[Property] = {
