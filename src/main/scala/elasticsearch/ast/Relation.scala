@@ -1,4 +1,4 @@
-package csl.elasticsearch.ast
+package elasticsearch.ast
 
 import csl.ast.Property
 

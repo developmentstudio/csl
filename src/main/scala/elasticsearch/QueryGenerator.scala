@@ -1,7 +1,7 @@
-package csl.elasticsearch
+package elasticsearch
 
 import csl.ast.Property
-import csl.elasticsearch.ast.Filter
+import elasticsearch.ast.Filter
 
 class FilterQueryGenerator
 {

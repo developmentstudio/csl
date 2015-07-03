@@ -1,16 +1,17 @@
 package csl.interpreter
 
 import csl.ast.Detector
-import csl.elasticsearch.{PatternDetector, RelationCollector, RequestDefinitionCollector, ResponseStorage}
 import csl.parser.DetectorParser
-import csl.typechecker.{Error, TypeChecker, Warning}
+import csl.typechecker
+import csl.typechecker.{TypeChecker, Warning}
+import elasticsearch.{PatternDetector, RelationCollector, RequestDefinitionCollector, ResponseStorage}
 
 import scala.io.Source
 
 object Interpreter {
 
   def main(args: Array[String]) {
-    val source = Source.fromFile("./src/main/resources/test_3.csl").mkString
+    val source = Source.fromFile("./src/main/resources/csl/example_1.csl").mkString
 
     parseSource(source) match {
       case Some(detector) =>
@@ -68,7 +69,7 @@ object Interpreter {
     }
   }
 
-  def typeChecker(ast: Detector): (List[Error], List[Warning]) = {
+  def typeChecker(ast: Detector): (List[typechecker.Error], List[Warning]) = {
     val checker = new TypeChecker
     checker.check(ast)
 

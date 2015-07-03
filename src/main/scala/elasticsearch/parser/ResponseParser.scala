@@ -1,6 +1,6 @@
-package csl.elasticsearch.parser
+package elasticsearch.parser
 
-import csl.elasticsearch.ast.Response
+import elasticsearch.ast.Response
 import org.json4s.DefaultFormats
 import org.json4s.jackson.JsonMethods.parse
 

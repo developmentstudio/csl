@@ -1,9 +1,9 @@
-package csl.elasticsearch
+package elasticsearch
 
 import java.util.concurrent.TimeUnit
 
 import csl.ast.{Detector, Identifier, RequestDefinition}
-import csl.elasticsearch.parser.ResponseParser
+import elasticsearch.parser.ResponseParser
 import wabisabi.{Scan, SearchUriParameters}
 
 import scala.concurrent.ExecutionContext.Implicits.global

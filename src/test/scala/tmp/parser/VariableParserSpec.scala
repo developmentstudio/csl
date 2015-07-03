@@ -1,6 +1,7 @@
-package csl.parser
+package tmp.parser
 
 import csl.ast._
+import csl.parser.DetectorParser
 import org.specs2.matcher.ParserMatchers
 import org.specs2.mutable.Specification
 
