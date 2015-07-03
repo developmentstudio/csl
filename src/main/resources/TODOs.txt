@@ -1,4 +1,4 @@
-+ Writing tests.
++ Writing/Refactor tests.
 - Typecheck: check for variable names for helper names to prevent conflicts.??
 - Helpers: Remove duplicate identifiers?
 - Magic Numbers
