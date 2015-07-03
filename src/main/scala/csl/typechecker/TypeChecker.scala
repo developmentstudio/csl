@@ -6,7 +6,6 @@ class TypeChecker {
 
   var variables: Map[String, RequestDefinition] = Map.empty
   var errors: List[Error] = List.empty
-  var warnings: List[Warning] = List.empty
 
   def check(detector: Detector): Unit = check(detector.body)
 

@@ -9,8 +9,8 @@ class PatternDetector(detector: Detector) {
   private var totalMatchesFound = 0
 
   def detect: List[Document] = {
-    val relations = ResponseStorage.getRelations(pattern)
-    relations.flatMap(relation => detect(ResponseStorage.getDocumentsBy(relation)))
+    val relations = Storage.getRelations(pattern)
+    relations.flatMap(relation => detect(Storage.getDocumentsBy(relation)))
   }
 
   def totalMatches: Int = totalMatchesFound

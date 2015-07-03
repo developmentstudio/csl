@@ -16,7 +16,7 @@ class RelationCollector(detector: Detector)
 
   private val generator: FilterQueryGenerator = new FilterQueryGenerator
 
-  private val relations = ResponseStorage.getRelations(detector.find.pattern)
+  private val relations = Storage.getRelations(detector.find.pattern)
 
   private val status = new CollectorStatus("relation_request_status.log")
 
@@ -56,7 +56,7 @@ class RelationCollector(detector: Detector)
         case Success(r) =>
           val response = ResponseParser.parseJSON(r.getResponseBody)
           if (response.hasHits) {
-            ResponseStorage.save(response, None, this.detector.find.relation.keys)
+            Storage.save(response, None, this.detector.find.relation.keys)
             this.scrollNextPage(response._scroll_id, relation)
           } else {
             status.setCompleted(relation.toString)

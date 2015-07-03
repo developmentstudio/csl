@@ -52,7 +52,7 @@ class RequestDefinitionCollector(detector: Detector)
       case Success(r) =>
         val response = ResponseParser.parseJSON(r.getResponseBody)
         if (response.hasHits) {
-          ResponseStorage.save(response, Some(variable.name), detector.find.relation.keys)
+          Storage.save(response, Some(variable.name), detector.find.relation.keys)
           this.scrollNextPage(response._scroll_id, variable)
         } else {
           status.setCompleted(variable.name)
