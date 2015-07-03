@@ -1,16 +1,16 @@
-package csl.elasticsearch
+package elasticsearch
 
-import java.sql.{DriverManager, PreparedStatement, Timestamp}
+import java.sql._
 import javax.xml.bind.DatatypeConverter
 
 import csl.ast.Pattern
-import csl.elasticsearch.ast.{Document, Relation, Response, Result}
-import csl.elasticsearch.parser.RelationParser
+import elasticsearch.ast.{Document, Relation, Response, Result}
+import elasticsearch.parser.RelationParser
 import org.json4s.JsonAST.JObject
-import org.json4s.jackson.JsonMethods.{compact, render}
-import org.json4s.{JString, JValue}
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
 
-object ResponseStorage {
+object Storage {
 
   val driver = "com.mysql.jdbc.Driver"
   val url = "jdbc:mysql://127.0.0.1:3306/csl"
@@ -20,19 +20,20 @@ object ResponseStorage {
   Class.forName(driver).newInstance()
   val connection = DriverManager.getConnection(url, username, password)
 
-  def clear: Unit = {
-    val deleteSetQuery = connection.prepareStatement("DELETE FROM raw_result_set")
+  def init: Unit = {
+    val deleteSetQuery = getConnection.prepareStatement("DELETE FROM raw_result_set")
     deleteSetQuery.execute()
-
-    val deleteLabelQuery = connection.prepareStatement("DELETE FROM document_label")
+    val deleteLabelQuery = getConnection.prepareStatement("DELETE FROM document_label")
     deleteLabelQuery.execute()
   }
 
+  private def getConnection: Connection = connection
+
   def getRelations(pattern: Pattern): List[Relation] = {
-    val statement: PreparedStatement = {
+    def getResultSetFromDatabase: ResultSet = {
+      var query = "SELECT DISTINCT(relation) FROM raw_result_set"
 
       val identifiers = pattern.getRequestDefinitionIdentifiers
-      var query  = "SELECT DISTINCT(relation) FROM raw_result_set"
       if (identifiers.nonEmpty) {
         query += " WHERE "
         var patternPartQuery: List[String] = List.empty
@@ -42,41 +43,29 @@ object ResponseStorage {
         query += patternPartQuery.mkString(" AND ")
       }
 
-      val statement = connection.prepareStatement(query)
+      val statement = getConnection.prepareStatement(query)
+
       if (identifiers.nonEmpty) {
         val definitionNames = for {
           id <- identifiers
         } yield id.name
 
-        for((name, i) <- definitionNames.view.zipWithIndex) statement.setString(i + 1, name)
+        for ((name, i) <- definitionNames.view.zipWithIndex) statement.setString(i + 1, name)
       }
 
-      statement
+      statement.executeQuery()
     }
-
-    val result = statement.executeQuery()
     var relations: List[Relation] = List.empty
-    while(result.next()) {
+    val result = getResultSetFromDatabase
+    while (result.next()) {
       relations = relations :+ RelationParser.parseJSON(result.getString("relation"))
     }
+    result.close()
     relations
   }
 
   def getDocumentsBy(relation: Relation): List[Document] = {
-    val statement = connection.prepareStatement(
-      "SELECT raw_result_set._index, raw_result_set._type, raw_result_set._id, raw_result_set.relation, " +
-      "       raw_result_set.timestamp, raw_result_set.body, document_label.variable_name " +
-      "FROM raw_result_set " +
-      "LEFT JOIN document_label ON raw_result_set._id = document_label._id " +
-      "WHERE raw_result_set.relation = ?" +
-      "ORDER BY raw_result_set.relation ASC, raw_result_set.timestamp ASC"
-    )
-    statement.setString(1, relation.rawJson)
-    val result = statement.executeQuery()
-
-    var docMap: Map[String, Document] = Map.empty
-    while(result.next())
-    {
+    def documentFromResultSet(result: ResultSet): Document = {
       val _index = result.getString("_index")
       val _type = result.getString("_type")
       val _id = result.getString("_id")
@@ -85,35 +74,49 @@ object ResponseStorage {
       val variable_name = result.getString("variable_name")
       val body = result.getString("body")
 
-      docMap get _id match {
-        case Some(d) => {
-          d.addLabel(variable_name)
-          docMap = docMap + (_id -> d)
-        }
-        case None => {
-          if (variable_name != null) {
-            docMap = docMap + (_id -> Document(_index, _type, _id, timestamp, List(variable_name), body))
-          } else {
-            docMap = docMap + (_id -> Document(_index, _type, _id, timestamp, List.empty, body))
-          }
-        }
+      if (variable_name != null) {
+        Document(_index, _type, _id, timestamp, List(variable_name), body)
+      } else {
+        Document(_index, _type, _id, timestamp, List.empty, body)
+      }
+    }
+    def getResultSetFromDatabase(relation: Relation): ResultSet = {
+      val statement = getConnection.prepareStatement(
+        "SELECT raw_result_set._index, raw_result_set._type, raw_result_set._id, raw_result_set.relation, " +
+          "       raw_result_set.timestamp, raw_result_set.body, document_label.variable_name " +
+          "FROM raw_result_set " +
+          "LEFT JOIN document_label ON raw_result_set._id = document_label._id " +
+          "WHERE raw_result_set.relation = ?" +
+          "ORDER BY raw_result_set.relation ASC, raw_result_set.timestamp ASC"
+      )
+      statement.setString(1, relation.rawJson)
+      statement.executeQuery()
+    }
+
+    var documents: Map[String, Document] = Map.empty
+    val result = getResultSetFromDatabase(relation)
+    while (result.next()) {
+      val document = documentFromResultSet(result)
+      documents get document._id match {
+        case Some(d) =>
+          document.labels.foreach(l => d.addLabel(l))
+          documents = documents + (document._id -> d)
+        case None => documents = documents + (document._id -> document)
       }
     }
     result.close()
-    statement.close()
-
-    docMap.values.toList.sortBy(_._timestamp)
+    documents.values.toList.sortBy(_._timestamp)
   }
 
   def save(response: Response, label: Option[String], relationKeys: List[String]): Unit = {
     if (response.hasHits) {
-      val resultSetQuery = connection.prepareStatement(
+      val resultSetQuery = getConnection.prepareStatement(
         "INSERT INTO raw_result_set (_index, _type, _id, relation, timestamp, body) " +
           "VALUES (?, ?, ?, ?, ?, ?) " +
           "ON DUPLICATE KEY UPDATE _id = _id"
       )
 
-      val documentLabelQuery = connection.prepareStatement(
+      val documentLabelQuery = getConnection.prepareStatement(
         "INSERT INTO document_label (_id, variable_name) " +
           "VALUES (?, ?) " +
           "ON DUPLICATE KEY UPDATE _id = _id, variable_name = variable_name"
@@ -145,12 +148,6 @@ object ResponseStorage {
     }
   }
 
-  def close(): Unit = {
-    if (!connection.isClosed) {
-      connection.close()
-    }
-  }
-
   private def generateRelation(result: Result, relationKeys: List[String]): String = {
     var rel: List[(String, JValue)] = List.empty
     relationKeys.sorted.foreach(key => {
@@ -160,6 +157,12 @@ object ResponseStorage {
       }
     })
     compact(render(new JObject(rel)))
+  }
+
+  def close: Unit = {
+    if (!getConnection.isClosed) {
+      getConnection.close()
+    }
   }
 
 }

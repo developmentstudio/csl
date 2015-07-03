@@ -1,4 +1,4 @@
-package csl.elasticsearch.ast
+package elasticsearch.ast
 
 import org.json4s.JObject
 import org.json4s.jackson.JsonMethods.{compact, render}

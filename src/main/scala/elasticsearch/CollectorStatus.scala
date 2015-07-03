@@ -1,4 +1,4 @@
-package csl.elasticsearch
+package elasticsearch
 
 import java.io.{File, FileWriter}
 

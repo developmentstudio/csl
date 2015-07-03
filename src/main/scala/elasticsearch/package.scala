@@ -1,5 +1,3 @@
-package csl
-
 import wabisabi.Client
 
 package object elasticsearch {
