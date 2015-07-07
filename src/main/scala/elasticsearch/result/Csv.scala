@@ -14,7 +14,7 @@ class Csv(documents: List[Document], keys: List[String]) {
   private var rows: List[String] = List.empty
 
   private def createHeader(keys: List[String]): Row = {
-    val k = keys :+ "Document ID"
+    val k = "Document ID" :: keys
     k.mkString(ColumnSeperator)
   }
 

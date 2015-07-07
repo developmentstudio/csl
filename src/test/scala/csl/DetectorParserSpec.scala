@@ -1,4 +1,4 @@
-package tmp.parser
+package csl
 
 import csl.ast._
 import csl.parser.DetectorParser
@@ -89,6 +89,32 @@ class DetectorParserSpec extends Specification with ParserMatchers {
       val result = Detector("LABEL", List(Find(Pattern(List.empty), Relation(List.empty))))
 
       parsers.detector must succeedOn(property).withResult(result)
+    }
+  }
+
+  "csv parser" should {
+    "parse csv definition" in {
+      val property = "csv {" +
+        "request.remoteAddress," +
+        "response.status" +
+        "}"
+      val result = CsvFile(List("request.remoteAddress", "response.status"))
+
+      parsers.csv must succeedOn(property).withResult(result)
+    }
+  }
+
+  "result parser" should {
+    "parse result block" in {
+      val property = "result {" +
+        "csv {" +
+          "request.remoteAddress," +
+          "response.status" +
+        "}" +
+      "}"
+      val result = Result(CsvFile(List("request.remoteAddress", "response.status")))
+
+      parsers.result must succeedOn(property).withResult(result)
     }
   }
 

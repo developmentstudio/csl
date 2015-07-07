@@ -16,6 +16,11 @@ case class Detector(label: String, body: List[DetectorElement]) extends Position
     case Some(f) => f
     case None => throw new Exception("Typechecker failed on checking 'Find'.")
   }
+
+  def result: Result = body.collectFirst{ case r: Result => r } match {
+    case Some(r) => r
+    case None => throw new Exception("Typechecker failed on checking 'Result'.")
+  }
 }
 
 case class RequestDefinition(name: String, request: ObjectValue, response: ObjectValue) extends DetectorElement {
@@ -103,3 +108,9 @@ case class MultiWildcard() extends PatternElement with Wildcard
 {
   override def toString: String = "*"
 }
+
+
+
+case class Result(export: ExportType) extends DetectorElement
+sealed trait ExportType
+case class CsvFile(keys: List[String] = List()) extends ExportType

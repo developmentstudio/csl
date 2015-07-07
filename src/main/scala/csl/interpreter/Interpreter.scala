@@ -27,15 +27,14 @@ object Interpreter {
     val parser = new DetectorParser()
     parser.parseAll[Detector](parser.detector, source) match {
       case parser.Success(ast: Detector, _) => Some(ast)
-      case parser.Failure(msg, next) => println("Parse failure at line " + next.pos + ": " + msg); None
-      case parser.Error(msg, next) => println("Parse error at line " + next.pos + ": " + msg); None
+      case parser.Failure(msg, next) => throw new Exception("Parse failure at line " + next.pos + ": " + msg); None
+      case parser.Error(msg, next) => throw new Exception("Parse error at line " + next.pos + ": " + msg); None
     }
   }
 
   private def typeChecker(ast: Detector): List[Error] = {
     val checker = new TypeChecker
     checker.check(ast)
-
     checker.errors
   }
 }
