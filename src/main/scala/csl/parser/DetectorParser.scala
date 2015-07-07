@@ -16,7 +16,7 @@ class DetectorParser extends JavaTokenParsers
     s => s.substring(1, s.length - 1).replace("\\", "")
   }
 
-  def detectorBody: Parser[List[DetectorElement]] = "{" ~> rep(find | variable) <~ "}"
+  def detectorBody: Parser[List[DetectorElement]] = "{" ~> rep(find | variable | result) <~ "}"
 
   def find: Parser[Find] = positioned("find" ~ "{" ~> (pattern ~ relation) <~ "}" ^^ {
     case p ~ r => Find(p, r)
@@ -90,5 +90,9 @@ class DetectorParser extends JavaTokenParsers
   private def removeQuotes(s: String): String = {
     s.substring(1, s.length - 1).replace("\\", "")
   }
+
+  def result: Parser[Result] = "result" ~ "{" ~> csv <~ "}" ^^ Result
+
+  def csv: Parser[CsvFile] = "csv" ~ "{" ~> repsep(propertyKey, ",") <~ "}" ^^ CsvFile
 
 }

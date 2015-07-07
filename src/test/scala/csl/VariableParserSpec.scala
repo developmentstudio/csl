@@ -1,4 +1,4 @@
-package tmp.parser
+package csl
 
 import csl.ast._
 import csl.parser.DetectorParser

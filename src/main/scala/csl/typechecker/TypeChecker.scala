@@ -1,6 +1,6 @@
 package csl.typechecker
 
-import csl.ast.{Detector, DetectorElement, Find, Identifier, In, MultiWildcard, Not, PatternElement, Repeat, RequestDefinition, SingleWildcard}
+import csl.ast._
 
 class TypeChecker {
 
@@ -10,21 +10,28 @@ class TypeChecker {
   def check(detector: Detector): Unit = check(detector.body)
 
   def check(body: List[DetectorElement]): Unit = {
-    filterVariables(body).foreach(checkRequestDefinition)
+    getRequestDefinitions(body).foreach(checkRequestDefinition)
 
     if (multipleFindDefinitions(body)) {
       addError(Error(s"Multiple find definitions found.", None))
     } else {
-      body.collectFirst{ case f: Find => f } match {
+      body.collectFirst { case f: Find => f } match {
         case Some(f) => checkFind(f)
         case None => addError(Error(s"No find definition found.", None))
       }
     }
+
+    if (multipleResultDefinitions(body)) {
+      addError(Error(s"Multiple result definitions found.", None))
+    } else {
+      body.collectFirst { case r: Result => r } match {
+        case Some(r) => checkResult(r) // TODO: This does not check anything?
+        case None => addError(Error(s"No result definition found.", None))
+      }
+    }
   }
 
-  def filterVariables(elements: List[DetectorElement]): List[RequestDefinition] = elements.collect{ case v: RequestDefinition => v }
-
-  def multipleFindDefinitions(elements: List[DetectorElement]): Boolean = elements.collect{ case f: Find => f }.size > 1
+  def getRequestDefinitions(elements: List[DetectorElement]): List[RequestDefinition] = elements.collect { case v: RequestDefinition => v }
 
   def checkRequestDefinition(v: RequestDefinition): Unit = {
     this.variables get v.name match {
@@ -32,6 +39,8 @@ class TypeChecker {
       case None => this.variables = this.variables + (v.name -> v)
     }
   }
+
+  def multipleFindDefinitions(elements: List[DetectorElement]): Boolean = elements.collect { case f: Find => f }.size > 1
 
   def checkFind(f: Find): Unit = {
     val pattern = f.pattern
@@ -45,9 +54,11 @@ class TypeChecker {
     } else {
       checkIfPatternElementsAreDefined(f.pattern.elements)
     }
-
-    // TODO: Check Constraints
   }
+
+  def multipleResultDefinitions(elements: List[DetectorElement]): Boolean = elements.collect { case r: Result => r }.size > 1
+
+  def checkResult(r: Result): Unit = ""
 
   def checkIfPatternElementsAreDefined(elements: List[PatternElement]): Unit = elements.foreach(checkIsDefined)
 
