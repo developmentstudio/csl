@@ -14,7 +14,7 @@
       }
     },
     "elasticsearch": {
-      "host": "",
+      "hostname": "",
       "port": 9200,
       "index": "",
       "type": ""
