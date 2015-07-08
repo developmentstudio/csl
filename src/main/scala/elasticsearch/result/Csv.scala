@@ -8,7 +8,7 @@ class Csv(documents: List[Document], keys: List[String]) {
 
   type Row = String
 
-  private val ColumnSeperator = ", "
+  private val ColumnSeperator = ","
   private val LineSeperator = "\n"
 
   private var rows: List[String] = List.empty
