@@ -12,10 +12,13 @@ import org.json4s.jackson.JsonMethods._
 
 object Storage {
 
-  val driver = "com.mysql.jdbc.Driver"
-  val url = "jdbc:mysql://127.0.0.1:3306/csl"
-  val username = "root"
-  val password = "root"
+  private val driver = "com.mysql.jdbc.Driver"
+  private val hostname = Config.setting("settings.storage.mysql.hostname")
+  private val port = Config.setting("settings.storage.mysql.port")
+  private val username = Config.setting("settings.storage.mysql.username")
+  private val password = Config.setting("settings.storage.mysql.password")
+  private val databaseName = Config.setting("settings.storage.mysql.databaseName")
+  private val url = s"jdbc:mysql://$hostname/$databaseName"
 
   Class.forName(driver).newInstance()
   val connection = DriverManager.getConnection(url, username, password)

@@ -1,0 +1,23 @@
+/*
+    This is the template for the local config file necessary to use the application.
+    All the settings had to be filled in. Please make a copy of this file and name in 'local.json' and remove the comments.
+*/
+{
+  "settings": {
+    "storage": {
+      "mysql": {
+        "hostname": "",
+        "port": 3306,
+        "databaseName": "csl",
+        "username": "",
+        "password": ""
+      }
+    },
+    "elasticsearch": {
+      "host": "",
+      "port": 9200,
+      "index": "",
+      "type": ""
+    }
+  }
+}

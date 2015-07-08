@@ -11,7 +11,15 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
 class RelationCollector(detector: Detector) {
-  val index: String = "20141016"
+  private val index: String = Config.setting("settings.elasticsearch.index")
+  private val _type: Option[String] = {
+    val t = Config.setting("settings.elasticsearch.type")
+    if (t.isEmpty) {
+      None
+    } else {
+      Some(t)
+    }
+  }
 
   private val generator: FilterQueryGenerator = new FilterQueryGenerator
 
@@ -28,7 +36,7 @@ class RelationCollector(detector: Detector) {
   private def search(relation: Relation): Unit = {
     if (relation.properties.length > 0 && this.detector.find.pattern.elements.length > 1) {
       val query = this.generator.generate(relation.properties)
-      val request = client.search(index, query, uriParameters = SearchUriParameters(searchType = Some(Scan), scroll = Some("10m")))
+      val request = client.search(index, query, _type, SearchUriParameters(searchType = Some(Scan), scroll = Some("10m")))
       request onComplete {
         case Success(r) =>
           val response = ResponseParser.parseJSON(r.getResponseBody)
