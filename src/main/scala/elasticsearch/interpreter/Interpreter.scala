@@ -10,6 +10,8 @@ import elasticsearch.result.Csv
 
 object Interpreter {
 
+  val startTime = System.nanoTime()
+
   def main(args: Array[String]) {
     val detector = CSLInterpreter.fromFile("./src/main/resources/csl/example_1.csl")
 
@@ -21,25 +23,27 @@ object Interpreter {
     if (requestDefinitionCollector.collect) {
       println("Variable Collector completed")
     }
+    printTimeElapsed
 
     val relationCollector = new RelationCollector(detector)
     if (relationCollector.collect) {
       println("Relation Collector completed")
     }
+    printTimeElapsed
 
     val patternDetector = new PatternDetector(detector)
     val documents = patternDetector.detect
     println(patternDetector.totalMatches + " matches found existing of a total of " + documents.length + " documents.")
+    printTimeElapsed
 
     detector.result.export match {
       case CsvFile(keys) =>
         val csv = new Csv(documents, keys)
         csv.save(s"./src/main/resources/exports/${filename(detector)}.csv");
+        println("Csv export completed")
       case e => throw new Exception(s"Export type '$e' not supported.")
     }
-
-    val endTime = System.nanoTime();
-    println("Elapsed time: " + (endTime - startTime) / 1000000000 + " seconds")
+    printTimeElapsed
 
     Storage.close
     System.exit(0)
@@ -50,5 +54,10 @@ object Interpreter {
     val dateFormat = new SimpleDateFormat("ddMMyyyy_HHmmss");
     val label = detector.label.replace(" ", "_")
     s"${label}_${dateFormat.format(today)}"
+  }
+
+  private def printTimeElapsed: Unit = {
+    val endTime = System.nanoTime()
+    println("Elapsed time: " + (endTime - startTime) / 1000000000 + " seconds")
   }
 }
