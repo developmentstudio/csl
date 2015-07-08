@@ -9,7 +9,7 @@ class Csv(documents: List[Document], keys: List[String]) {
   type Row = String
 
   private val ColumnSeperator = ","
-  private val LineSeperator = "\n"
+  private val LineSeparator = "\n"
 
   private var rows: List[String] = List.empty
 
@@ -34,7 +34,7 @@ class Csv(documents: List[Document], keys: List[String]) {
     rows = rows ::: documents.map(d => createDocumentRow(d, keys).toString)
 
     val writer = new FileWriter(path, true)
-    writer.write(rows.mkString(LineSeperator) + "\n")
+    writer.write(rows.mkString(LineSeparator) + "\n")
     writer.close()
   }
 }
