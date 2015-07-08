@@ -10,7 +10,13 @@ class PatternDetector(detector: Detector) {
 
   def detect: List[Document] = {
     val relations = Storage.getRelations(pattern)
-    relations.flatMap(relation => detect(Storage.getDocumentsBy(relation)))
+    if (detector.find.pattern.hasMoreThanOneElement) {
+      relations.flatMap(relation => detect(Storage.getDocumentsBy(relation)))
+    } else {
+      val documents = relations.flatMap(relation => Storage.getDocumentsBy(relation))
+      totalMatchesFound += documents.length
+      documents
+    }
   }
 
   def totalMatches: Int = totalMatchesFound
