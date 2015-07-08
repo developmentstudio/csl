@@ -15,6 +15,8 @@ object Interpreter {
 
     Storage.init
 
+    val startTime = System.nanoTime()
+
     val requestDefinitionCollector = new RequestDefinitionCollector(detector)
     if (requestDefinitionCollector.collect) {
       println("Variable Collector completed")
@@ -35,6 +37,9 @@ object Interpreter {
         csv.save(s"./src/main/resources/exports/${filename(detector)}.csv");
       case e => throw new Exception(s"Export type '$e' not supported.")
     }
+
+    val endTime = System.nanoTime();
+    println("Elapsed time: " + (endTime - startTime) / 1000000000 + " seconds")
 
     Storage.close
     System.exit(0)
