@@ -13,7 +13,7 @@ object Interpreter {
   val startTime = System.nanoTime()
 
   def main(args: Array[String]) {
-    val detector = CSLInterpreter.fromFile("./src/main/resources/csl/example_1.csl")
+    val detector = CSLInterpreter.fromFile(args(0))
 
     Storage.init
 
