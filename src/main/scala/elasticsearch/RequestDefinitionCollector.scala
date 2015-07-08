@@ -20,7 +20,7 @@ class RequestDefinitionCollector(detector: Detector) {
     }
   }
 
-  private val generator: FilterQueryGenerator = new FilterQueryGenerator
+  private val generator: FilterQueryGenerator = new FilterQueryGenerator(detector.find.from, detector.find.till)
 
   private val requestDefinitions: List[RequestDefinition] = {
     val identifiers: List[Identifier] = detector.find.pattern.getRequestDefinitionIdentifiers.distinct

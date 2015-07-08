@@ -21,7 +21,7 @@ class RelationCollector(detector: Detector) {
     }
   }
 
-  private val generator: FilterQueryGenerator = new FilterQueryGenerator
+  private val generator: FilterQueryGenerator = new FilterQueryGenerator(detector.find.from, detector.find.till)
 
   private val relations = Storage.getRelations(detector.find.pattern)
 

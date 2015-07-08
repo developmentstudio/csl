@@ -28,7 +28,9 @@ class PatterDetectorSpec extends Specification {
           Identifier("C")
         )
       ),
-      Relation(List.empty)
+      Relation(List.empty),
+      None,
+      None
     )
   ))
 

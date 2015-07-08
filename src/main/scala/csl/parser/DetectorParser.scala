@@ -18,9 +18,17 @@ class DetectorParser extends JavaTokenParsers
 
   def detectorBody: Parser[List[DetectorElement]] = "{" ~> rep(find | variable | result) <~ "}"
 
-  def find: Parser[Find] = positioned("find" ~ "{" ~> (pattern ~ relation) <~ "}" ^^ {
-    case p ~ r => Find(p, r)
+  def find: Parser[Find] = positioned("find" ~ "{" ~> (opt(fromDate) ~ opt(tillDate) ~ pattern ~ relation) <~ "}" ^^ {
+    case f ~ t ~ p ~ r => Find(p, r, f, t)
   })
+
+  def fromDate: Parser[String] = "from" ~ ":" ~> date
+
+  def tillDate: Parser[String] = "till" ~ ":" ~> date
+
+  def date: Parser[String] = """(?:(?:31(\/|-|\.)(?:0[13578]|1[02]))\1|(?:(?:29|30)(\/|-|\.)(?:0[1,3-9]|1[0-2])\2))(?:(?:1[6-9]|[2-9]\d)\d{2})$|^(?:29(\/|-|\.)02\3(?:(?:(?:1[6-9]|[2-9]\d)(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0[1-9]|1\d|2[0-8])(\/|-|\.)(?:(?:0[1-9])|(?:1[0-2]))\4(?:(?:1[6-9]|[2-9]\d)\d{2})""".r ^^ {
+    case d => d.replace("/", "-").replace(".", "-")
+  }
 
   def pattern: Parser[Pattern] = positioned("pattern" ~ "{" ~> repsep(patternElement, "->") <~ "}" ^^ {
     case elements => Pattern(elements)
@@ -43,7 +51,7 @@ class DetectorParser extends JavaTokenParsers
     case "*" => MultiWildcard()
   })
 
-  def relation: Parser[Relation] = positioned("with" ~ "relation" ~ "on" ~ "{" ~> repsep(propertyKey, "and") <~ "}" ^^ {
+  def relation: Parser[Relation] = positioned("with" ~ "relation" ~ "on" ~ "{" ~> repsep(propertyKey, ",") <~ "}" ^^ {
     case keys => Relation(keys.filterNot(_.forall(_.equals(""))))
   })
 

@@ -5,19 +5,19 @@ import scala.util.parsing.input.Positional
 sealed trait DetectorElement extends Positional
 
 case class Detector(label: String, body: List[DetectorElement]) extends Positional {
-  def definitions: List[RequestDefinition] = body.collect{ case v: RequestDefinition => v }
+  def definitions: List[RequestDefinition] = body.collect { case v: RequestDefinition => v }
 
   def definition(name: String): Option[RequestDefinition] = definitions.find({
     case rd: RequestDefinition if rd.name == name => true
     case _ => false
   })
 
-  def find: Find = body.collectFirst{ case f: Find => f } match {
+  def find: Find = body.collectFirst { case f: Find => f } match {
     case Some(f) => f
     case None => throw new Exception("Typechecker failed on checking 'Find'.")
   }
 
-  def result: Result = body.collectFirst{ case r: Result => r } match {
+  def result: Result = body.collectFirst { case r: Result => r } match {
     case Some(r) => r
     case None => throw new Exception("Typechecker failed on checking 'Result'.")
   }
@@ -41,9 +41,9 @@ case class RequestDefinition(name: String, request: ObjectValue, response: Objec
   }
 }
 
-case class Find(pattern: Pattern, relation: Relation) extends DetectorElement
-case class Pattern(elements: List[PatternElement]) extends Positional
-{
+case class Find(pattern: Pattern, relation: Relation, from: Option[String], till: Option[String]) extends DetectorElement
+
+case class Pattern(elements: List[PatternElement]) extends Positional {
   def isDefined: Boolean = elements.nonEmpty
 
   def hasMoreThanOneElement: Boolean = elements.length > 1 || hasMultiWildcard || hasRepeatLongerThanOne
@@ -75,42 +75,42 @@ case class Pattern(elements: List[PatternElement]) extends Positional
     identifiers
   }
 }
-case class Relation(keys: List[String]) extends Positional
-{
+
+case class Relation(keys: List[String]) extends Positional {
   def isDefined: Boolean = keys.nonEmpty
 }
 
 sealed trait PatternElement extends Positional
-case class Identifier(name: String) extends PatternElement
-{
+
+case class Identifier(name: String) extends PatternElement {
   override def toString: String = name
 }
-case class In(identifiers: List[Identifier]) extends PatternElement
-{
-  override def toString: String = "in(" + identifiers.mkString(", ") +  ")"
+
+case class In(identifiers: List[Identifier]) extends PatternElement {
+  override def toString: String = "in(" + identifiers.mkString(", ") + ")"
 }
-case class Not(identifiers: List[Identifier]) extends PatternElement
-{
-  override def toString: String = "not(" + identifiers.mkString(", ") +  ")"
+
+case class Not(identifiers: List[Identifier]) extends PatternElement {
+  override def toString: String = "not(" + identifiers.mkString(", ") + ")"
 }
-case class Repeat(identifier: Identifier, times: Int) extends PatternElement
-{
-  override def toString: String = "repeat(" + identifier + ", " + times +  ")"
+
+case class Repeat(identifier: Identifier, times: Int) extends PatternElement {
+  override def toString: String = "repeat(" + identifier + ", " + times + ")"
 }
 
 sealed trait Wildcard extends PatternElement
-case class SingleWildcard() extends PatternElement with Wildcard
-{
+
+case class SingleWildcard() extends PatternElement with Wildcard {
   override def toString: String = "?"
 }
 
-case class MultiWildcard() extends PatternElement with Wildcard
-{
+case class MultiWildcard() extends PatternElement with Wildcard {
   override def toString: String = "*"
 }
 
 
-
 case class Result(export: ExportType) extends DetectorElement
+
 sealed trait ExportType
+
 case class CsvFile(keys: List[String] = List()) extends ExportType
