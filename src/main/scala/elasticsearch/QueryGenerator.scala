@@ -3,10 +3,10 @@ package elasticsearch
 import csl.ast.Property
 import elasticsearch.ast.Filter
 
-class FilterQueryGenerator
+class FilterQueryGenerator(from: Option[String] = None, till: Option[String] = None)
 {
   def generate(properties: List[Property]): Query = {
-    val filters = properties map(createFilter)
+    val filters = properties map(p => Filter(p))
     val jsonFilter = filters.map(_.toString).mkString(",")
 
     """{
@@ -22,5 +22,4 @@ class FilterQueryGenerator
       """.stripMargin
   }
 
-  private def createFilter(p: Property): Filter = Filter(p)
 }
