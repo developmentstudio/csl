@@ -1,8 +1,9 @@
-package elasticsearch
+package elasticsearch.collector
 
 import java.util.concurrent.TimeUnit
 
 import csl.ast.Detector
+import elasticsearch._
 import elasticsearch.ast.Relation
 import elasticsearch.parser.ResponseParser
 import wabisabi.{Scan, SearchUriParameters}

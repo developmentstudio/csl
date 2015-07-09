@@ -6,6 +6,8 @@ import java.util.Calendar
 import csl.ast.{CsvFile, Detector}
 import csl.interpreter.{Interpreter => CSLInterpreter}
 import elasticsearch._
+import elasticsearch.collector.{RequestDefinitionCollector, RelationCollector}
+import elasticsearch.detector.PatternDetector
 import elasticsearch.result.Csv
 
 object Interpreter {

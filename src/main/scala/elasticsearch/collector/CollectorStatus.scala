@@ -1,4 +1,4 @@
-package elasticsearch
+package elasticsearch.collector
 
 import java.io.{File, FileWriter}
 

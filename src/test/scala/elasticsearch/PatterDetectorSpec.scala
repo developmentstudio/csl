@@ -2,6 +2,7 @@ package elasticsearch
 
 import csl.ast._
 import elasticsearch.ast.Document
+import elasticsearch.detector.PatternDetector
 import org.specs2.mutable.Specification
 
 class PatterDetectorSpec extends Specification {

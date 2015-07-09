@@ -7,8 +7,8 @@ import csl.ast.Pattern
 import elasticsearch.ast.{Document, Relation, Response, Result}
 import elasticsearch.parser.RelationParser
 import org.json4s.JsonAST.JObject
-import org.json4s._
-import org.json4s.jackson.JsonMethods._
+import org.json4s.{JValue, JString}
+import org.json4s.jackson.JsonMethods.{compact, render}
 
 object Storage {
 

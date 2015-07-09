@@ -1,6 +1,7 @@
-package elasticsearch
+package elasticsearch.collector
 
 import csl.ast.Property
+import elasticsearch._
 import elasticsearch.ast.{DateRangeFilter, Filter}
 
 class FilterQueryGenerator(from: Option[String] = None, till: Option[String] = None) {
