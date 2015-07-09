@@ -1,6 +1,8 @@
 package elasticsearch.ast
 
-case class DateRangeFilter(from: Option[String], till: Option[String]) {
+sealed trait RangeFilter
+
+class DateRangeFilter(from: Option[String], till: Option[String]) extends RangeFilter {
   private val gte: String = from match {
     case Some(f) => "\"gte\" : \"" + f + "\""
     case None => ""
