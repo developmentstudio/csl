@@ -2,14 +2,10 @@
 - Typecheck: check for variable names for helper names to prevent conflicts.??
 - Helpers: Remove duplicate identifiers?
 - Magic Numbers
-! Time-frame definition / ES Index selection
 - Result constraints
-! Result view / ES Query/Queries to see the results.
-! Export results to text file?
 - Clear database after run?
-
-
 + Refactoring PatternDetector?
++ Write Readme file with usage instructions.
 
 
 
