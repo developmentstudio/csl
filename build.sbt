@@ -1,4 +1,4 @@
-name := "CSL"
+name := "CSL - Cool Security Language"
 
 version := "1.0"
 
@@ -17,3 +17,5 @@ libraryDependencies ++= Seq(
   "org.json4s" %% "json4s-jackson" % "3.2.11",
   "mysql" % "mysql-connector-java" % "5.1.12"
 )
+
+assemblyJarName in assembly := s"csl-${version}.jar"

@@ -26,7 +26,7 @@ class RelationCollector(detector: Detector) {
 
   private val relations = Storage.getRelations(detector.find.pattern)
 
-  private val status = new CollectorStatus("relation_request_status.log")
+  private val status = new CollectorStatus
 
   def collect: Boolean = {
     this.relations.distinct foreach (search)

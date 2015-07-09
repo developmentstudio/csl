@@ -10,7 +10,7 @@ object Config {
   implicit val formats = DefaultFormats
 
   private var settings = Map[String, Any]()
-  private val config = parse(jsonFile("./src/main/resources/config/local.json")).extract[Map[String, Any]]
+  private val config = parse(jsonFile("config.json")).extract[Map[String, Any]]
 
   def setting(key: String): String = {
     flatten(this.config)

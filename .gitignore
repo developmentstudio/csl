@@ -13,6 +13,8 @@ out
 # OS X
 .DS_Store
 
-src/main/resources/config/local.json
+src/main/resources/config/
 src/main/resources/exports/
 src/main/resources/csl/
+config.json
+*.csv

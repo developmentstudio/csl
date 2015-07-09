@@ -28,7 +28,7 @@ class RequestDefinitionCollector(detector: Detector) {
     for (id <- identifiers) yield detector.definition(id.name).get
   }
 
-  private val status = new CollectorStatus("variable_request_status.log")
+  private val status = new CollectorStatus
 
   def collect: Boolean = {
     requestDefinitions foreach (search)

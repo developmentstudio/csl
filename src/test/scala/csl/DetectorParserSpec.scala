@@ -22,7 +22,7 @@ class DetectorParserSpec extends Specification with ParserMatchers {
 
   "relationBlock parser" should {
     "parse block with property keys" in {
-      val property = "with relation on { A.B.C and C and N }"
+      val property = "with relation on { A.B.C, C, N }"
       val result = Relation(List("A.B.C", "C", "N"))
 
       parsers.relation must succeedOn(property).withResult(result)
