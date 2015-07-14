@@ -3,7 +3,7 @@ CREATE TABLE `raw_result_set` (
     `_type` varchar(32) COLLATE utf8_bin NOT NULL,
     `_id` varchar(32) COLLATE utf8_bin NOT NULL,
     `relation` text COLLATE utf8_bin NOT NULL,
-    `timestamp` datetime NOT NULL,
+    `timestamp` datetime(3) NOT NULL,
     `body` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 ALTER TABLE `raw_result_set` ADD PRIMARY KEY (`_id`);

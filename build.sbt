@@ -15,7 +15,7 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-simple" % "1.6.4",
   "wabisabi" %% "wabisabi" % "2.1.3",
   "org.json4s" %% "json4s-jackson" % "3.2.11",
-  "mysql" % "mysql-connector-java" % "5.1.12"
+  "mysql" % "mysql-connector-java" % "5.1.36"
 )
 
 assemblyJarName in assembly := s"csl-${version}.jar"

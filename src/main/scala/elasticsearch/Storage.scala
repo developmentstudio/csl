@@ -72,7 +72,6 @@ object Storage {
       val _index = result.getString("_index")
       val _type = result.getString("_type")
       val _id = result.getString("_id")
-      val relation = result.getString("relation")
       val timestamp = result.getString("timestamp")
       val variable_name = result.getString("variable_name")
       val body = result.getString("body")
@@ -127,13 +126,13 @@ object Storage {
 
       response.hits.hits.foreach(r => {
         val relationInformation = generateRelation(r, relationKeys)
-        val date = DatatypeConverter.parseDateTime(r.source("request.timestamp").get.toString)
+        val date = DatatypeConverter.parseDateTime(r.source("@timestamp").get.toString)
 
         resultSetQuery.setString(1, r._index)
         resultSetQuery.setString(2, r._type)
         resultSetQuery.setString(3, r._id)
         resultSetQuery.setString(4, relationInformation)
-        resultSetQuery.setTimestamp(5, new Timestamp(date.getTime.getTime))
+        resultSetQuery.setTimestamp(5, new Timestamp(date.getTimeInMillis))
         resultSetQuery.setString(6, r.sourceAsJson)
         resultSetQuery.addBatch()
 
