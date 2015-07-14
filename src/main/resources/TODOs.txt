@@ -6,6 +6,5 @@
 - Clear database after run?
 + Refactoring PatternDetector?
 + Write Readme file with usage instructions.
-+ How to handle pages loaded in the background, js files, images, iframe contents. Noise in pattern. Exact match: false or the like?
-+ Note: Use Elasticsearch field not_analyzed for the right result. Logstash created index -> use .raw fields.
++ How to handle pages loaded in the background, js files, images, iframe contents. Noise in pattern. Exact match: false or the like? max-distance-between-pattern-parts: 5.
 
