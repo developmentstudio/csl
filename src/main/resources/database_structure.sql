@@ -1,3 +1,6 @@
+-- Use at least MySQL server version 5.6.4 or higher.
+-- - Earlier versions truncates milliseconds from time and do not allow datetime(3) as syntax.
+
 CREATE TABLE `raw_result_set` (
     `_index` varchar(32) COLLATE utf8_bin NOT NULL,
     `_type` varchar(32) COLLATE utf8_bin NOT NULL,
