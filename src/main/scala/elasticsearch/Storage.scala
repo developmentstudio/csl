@@ -126,7 +126,16 @@ object Storage {
 
       response.hits.hits.foreach(r => {
         val relationInformation = generateRelation(r, relationKeys)
-        val date = DatatypeConverter.parseDateTime(r.source("@timestamp").get.toString)
+
+        val dateValue = r.source("@timestamp") match {
+          case Some(t) => t.toString
+          case None =>
+            r.source("request.timestamp") match {
+              case Some(t) => t.toString
+              case None => throw new Exception("No Timestamp available in log entry. (Document ID: " + r._index + "/" + r._type + "/" + r._id + ")")
+            }
+        }
+        val date = DatatypeConverter.parseDateTime(dateValue)
 
         resultSetQuery.setString(1, r._index)
         resultSetQuery.setString(2, r._type)
