@@ -43,7 +43,7 @@ object Storage {
         identifiers.foreach(_ => {
           patternPartQuery = patternPartQuery :+ "_id in (SELECT _id FROM document_label WHERE variable_name = ?)"
         })
-        query += patternPartQuery.mkString(" AND ")
+        query += patternPartQuery.mkString(" OR ")
       }
 
       val statement = getConnection.prepareStatement(query)
