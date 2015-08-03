@@ -8,3 +8,5 @@
 + Write Readme file with usage instructions.
 + How to handle pages loaded in the background, js files, images, iframe contents. Noise in pattern. Exact match: false or the like? max-distance-between-pattern-parts: 5.
 
++ Allow collecting of related document for single part patterns. e.g. collect based on a remote address all the remote addresses that are related via a specific cookie.
++ Constraint pattern based on repetition in a specific time interval.
