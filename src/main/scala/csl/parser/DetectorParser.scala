@@ -18,9 +18,18 @@ class DetectorParser extends JavaTokenParsers
 
   def detectorBody: Parser[List[DetectorElement]] = "{" ~> rep(find | variable | result) <~ "}"
 
-  def find: Parser[Find] = positioned("find" ~ "{" ~> (opt(fromDate) ~ opt(tillDate) ~ pattern ~ relation) <~ "}" ^^ {
-    case f ~ t ~ p ~ r => Find(p, r, f, t)
+  def find: Parser[Find] = positioned("find" ~ "{" ~> (opt(fromDate) ~ opt(tillDate) ~ pattern ~ relation ~ opt(timesBeforeMatch)) <~ "}" ^^ {
+    case f ~ t ~ p ~ r ~ tbm => Find(p, r, f, t, tbm, None)
   })
+
+  def timesBeforeMatch: Parser[TimesBeforeMatch] = "times" ~ ":" ~> opt(timesBeforeMatchOperator) ~ wholeNumber ^^ {
+    case o ~ t => TimesBeforeMatch(t.toInt, o)
+  }
+
+  def timesBeforeMatchOperator: Parser[TimesBeforeMatchOperator] = (">" | "<") ^^ {
+    case ">" => BiggerThanOperator()
+    case "<" => SmallerThanOperator()
+  }
 
   def fromDate: Parser[String] = "from" ~ ":" ~> date
 

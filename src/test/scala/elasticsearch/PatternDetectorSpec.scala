@@ -31,6 +31,8 @@ class PatternDetectorSpec extends Specification {
       ),
       Relation(List.empty),
       None,
+      None,
+      None,
       None
     )
   ))
