@@ -5,7 +5,7 @@ import elasticsearch.ast.Document
 import elasticsearch.detector.PatternDetector
 import org.specs2.mutable.Specification
 
-class PatterDetectorSpec extends Specification {
+class PatternDetectorSpec extends Specification {
 
   val detector = Detector("Detector Name", List(
     RequestDefinition("A",

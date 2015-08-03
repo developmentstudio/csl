@@ -31,8 +31,8 @@ class RequestDefinitionCollector(detector: Detector) {
   private val status = new CollectorStatus
 
   def collect: Boolean = {
-    requestDefinitions foreach (search)
-    this.waitForDocumentCollectionToComplete
+    requestDefinitions foreach search
+    this.waitForDocumentCollectionToComplete()
     true
   }
 
@@ -63,7 +63,7 @@ class RequestDefinitionCollector(detector: Detector) {
     }
   }
 
-  private def waitForDocumentCollectionToComplete: Unit = {
+  private def waitForDocumentCollectionToComplete(): Unit = {
     val parts = this.detector.find.pattern.getRequestDefinitionIdentifiers.map(_.name)
     while (!this.status.isCompleted(parts)) {
       TimeUnit.SECONDS.sleep(1);

@@ -29,13 +29,13 @@ class RelationCollector(detector: Detector) {
   private val status = new CollectorStatus
 
   def collect: Boolean = {
-    this.relations.distinct foreach (search)
-    this.waitForDocumentCollectionToComplete
+    this.relations.distinct foreach search
+    this.waitForDocumentCollectionToComplete()
     true
   }
 
   private def search(relation: Relation): Unit = {
-    if (relation.properties.length > 0 && this.detector.find.pattern.elements.length > 1) {
+    if (relation.properties.nonEmpty) {
       val query = this.generator.generate(relation.properties)
       val request = client.search(index, query, _type, SearchUriParameters(searchType = Some(Scan), scroll = Some("10m")))
       request onComplete {
@@ -64,7 +64,7 @@ class RelationCollector(detector: Detector) {
     }
   }
 
-  private def waitForDocumentCollectionToComplete: Unit = {
+  private def waitForDocumentCollectionToComplete(): Unit = {
     val parts = this.relations map (_.toString)
     while (!this.status.isCompleted(parts)) {
       TimeUnit.SECONDS.sleep(1);
