@@ -18,18 +18,9 @@ class DetectorParser extends JavaTokenParsers
 
   def detectorBody: Parser[List[DetectorElement]] = "{" ~> rep(find | variable | result) <~ "}"
 
-  def find: Parser[Find] = positioned("find" ~ "{" ~> (opt(fromDate) ~ opt(tillDate) ~ pattern ~ relation ~ opt(timesBeforeMatch)) <~ "}" ^^ {
-    case f ~ t ~ p ~ r ~ tbm => Find(p, r, f, t, tbm, None)
+  def find: Parser[Find] = positioned("find" ~ "{" ~> (opt(fromDate) ~ opt(tillDate) ~ pattern ~ relation ~ opt(timesBeforeMatch) ~ opt(interval)) <~ "}" ^^ {
+    case f ~ t ~ p ~ r ~ tbm ~ i => Find(p, r, f, t, tbm, i)
   })
-
-  def timesBeforeMatch: Parser[TimesBeforeMatch] = "times" ~ ":" ~> opt(timesBeforeMatchOperator) ~ wholeNumber ^^ {
-    case o ~ t => TimesBeforeMatch(t.toInt, o)
-  }
-
-  def timesBeforeMatchOperator: Parser[TimesBeforeMatchOperator] = (">" | "<") ^^ {
-    case ">" => BiggerThanOperator()
-    case "<" => SmallerThanOperator()
-  }
 
   def fromDate: Parser[String] = "from" ~ ":" ~> date
 
@@ -43,7 +34,7 @@ class DetectorParser extends JavaTokenParsers
     case elements => Pattern(elements)
   })
 
-  def patternElement: Parser[PatternElement] = (wildcard | in | not | repeat | identifier)
+  def patternElement: Parser[PatternElement] = wildcard | in | not | repeat | identifier
 
   def identifier: Parser[Identifier] = positioned(ident ^^ Identifier)
 
@@ -63,6 +54,37 @@ class DetectorParser extends JavaTokenParsers
   def relation: Parser[Relation] = positioned("with" ~ "relation" ~ "on" ~ "{" ~> repsep(propertyKey, ",") <~ "}" ^^ {
     case keys => Relation(keys.filterNot(_.forall(_.equals(""))))
   })
+
+  def timesBeforeMatch: Parser[TimesBeforeMatch] = "times" ~ ":" ~> opt(timesBeforeMatchOperator) ~ wholeNumber ^^ {
+    case o ~ t => TimesBeforeMatch(t.toInt, o)
+  }
+
+  def timesBeforeMatchOperator: Parser[TimesBeforeMatchOperator] = (">" | "<") ^^ {
+    case ">" => BiggerThanOperator()
+    case "<" => SmallerThanOperator()
+  }
+
+  def interval: Parser[Interval] = "interval" ~ ":" ~> wholeNumber ~ intervalUnit ^^ {
+    case n ~ u => Interval(n.toInt, u)
+  }
+
+  def intervalUnit: Parser[IntervalUnit] = intervalUnitSecond | intervalUnitMinute | intervalUnitHours | intervalUnitDays
+
+  def intervalUnitSecond: Parser[IntervalInSeconds] = ("seconds"|"second") ^^ {
+    case _ => IntervalInSeconds()
+  }
+
+  def intervalUnitMinute: Parser[IntervalInMinutes] = ("minutes"|"minute") ^^ {
+    case _ => IntervalInMinutes()
+  }
+
+  def intervalUnitHours: Parser[IntervalInHours] = ("hours"|"hour") ^^ {
+    case _ => IntervalInHours()
+  }
+
+  def intervalUnitDays: Parser[IntervalInDays] = ("days"|"day") ^^ {
+    case _ => IntervalInDays()
+  }
 
   def variable: Parser[RequestDefinition] = positioned((ident <~ "=") ~ request ~ ("=>" ~> response) ^^ {
     case v ~ req ~ res  => RequestDefinition(v, req, res)

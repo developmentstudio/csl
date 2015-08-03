@@ -111,6 +111,16 @@ class DetectorParserSpec extends Specification with ParserMatchers {
 
       parsers.find must succeedOn(property).withResult(result)
     }
+
+    "parse find description with the interval the pattern has the match" in {
+      val property = "find { " +
+        "pattern { } with relation on { } " +
+        "interval: 1 minute" +
+        "}"
+      val result = Find(Pattern(List.empty), Relation(List.empty), None, None, None, Some(Interval(1, IntervalInMinutes())))
+
+      parsers.find must succeedOn(property).withResult(result)
+    }
   }
 
   "detector parser" should {
