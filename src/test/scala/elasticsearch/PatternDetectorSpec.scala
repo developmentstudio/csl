@@ -1,5 +1,8 @@
 package elasticsearch
 
+import java.sql.Timestamp
+import java.util.Date
+
 import csl.ast._
 import elasticsearch.ast.Document
 import elasticsearch.detector.PatternDetector
@@ -36,19 +39,20 @@ class PatternDetectorSpec extends Specification {
       None
     )
   ))
+  val currentDate = new Date();
 
   val patternDetector = new PatternDetector(detector)
 
   "Pattern detector method matchesIdentifier" should {
     "match" in {
-      val document = Document("", "", "", "", List("A", "B"), "")
+      val document = Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), "")
       val element = Identifier("A")
 
       patternDetector.matchesIdentifier(document, element) mustEqual true
     }
 
     "no match" in {
-      val document = Document("", "", "", "", List("A", "B"), "")
+      val document = Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), "")
       val element = Identifier("C")
 
       patternDetector.matchesIdentifier(document, element) mustEqual false
@@ -57,14 +61,14 @@ class PatternDetectorSpec extends Specification {
 
   "Pattern detector method matchesIn" should {
     "match" in {
-      val document = Document("", "", "", "", List("A", "B"), "")
+      val document = Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), "")
       val element = In(List(Identifier("A"), Identifier("C")))
 
       patternDetector.matchesIn(document, element) mustEqual true
     }
 
     "no match" in {
-      val document = Document("", "", "", "", List("A", "B"), "")
+      val document = Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), "")
       val element = In(List(Identifier("C")))
 
       patternDetector.matchesIn(document, element) mustEqual false
@@ -73,14 +77,14 @@ class PatternDetectorSpec extends Specification {
 
   "Pattern detector method matchesNot" should {
     "match" in {
-      val document = Document("", "", "", "", List("A", "B"), "")
+      val document = Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), "")
       val element = Not(List(Identifier("C"), Identifier("D")))
 
       patternDetector.matchesNot(document, element) mustEqual true
     }
 
     "no match" in {
-      val document = Document("", "", "", "", List("A", "B"), "")
+      val document = Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), "")
       val element = Not(List(Identifier("B"), Identifier("C")))
 
       patternDetector.matchesNot(document, element) mustEqual false
@@ -90,16 +94,16 @@ class PatternDetectorSpec extends Specification {
   "Pattern detector method matchesRepeat" should {
     "match" in {
       val documents = List(
-        Document("", "", "", "", List("A", "B"), ""),
-        Document("", "", "", "", List("A", "B"), ""),
-        Document("", "", "", "", List("A", "B"), ""),
-        Document("", "", "", "", List("A", "B"), ""),
-        Document("", "", "", "", List("A", "B"), ""),
-        Document("", "", "", "", List("A", "B"), ""),
-        Document("", "", "", "", List("A", "B"), ""),
-        Document("", "", "", "", List("A", "B"), ""),
-        Document("", "", "", "", List("A", "B"), ""),
-        Document("", "", "", "", List("A", "B"), "")
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), "")
       )
       val index = 0
       val element = Repeat(Identifier("B"), 5)
@@ -109,16 +113,16 @@ class PatternDetectorSpec extends Specification {
 
     "no match" in {
       val documents = List(
-        Document("", "", "", "", List("A", "B"), ""),
-        Document("", "", "", "", List("A", "B"), ""),
-        Document("", "", "", "", List("A", "B"), ""),
-        Document("", "", "", "", List("A", "B"), ""),
-        Document("", "", "", "", List("A", "C"), ""),
-        Document("", "", "", "", List("A", "B"), ""),
-        Document("", "", "", "", List("A", "B"), ""),
-        Document("", "", "", "", List("A", "B"), ""),
-        Document("", "", "", "", List("A", "B"), ""),
-        Document("", "", "", "", List("A", "B"), "")
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "C"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A", "B"), "")
       )
       val index = 0
       val element = Repeat(Identifier("B"), 10)
@@ -130,20 +134,20 @@ class PatternDetectorSpec extends Specification {
   "Method detect" should {
     "detect pattern" in {
       val documents = List(
-        Document("", "", "1", "", List("A"), ""),
-        Document("", "", "2", "", List("C"), ""),
-        Document("", "", "3", "", List("B"), ""),
-        Document("", "", "4", "", List("C"), ""),
-        Document("", "", "5", "", List("A"), ""),
-        Document("", "", "6", "", List("C"), "")
+        Document("", "", "1", new Timestamp(currentDate.getTime), List("A"), ""),
+        Document("", "", "2", new Timestamp(currentDate.getTime), List("C"), ""),
+        Document("", "", "3", new Timestamp(currentDate.getTime), List("B"), ""),
+        Document("", "", "4", new Timestamp(currentDate.getTime), List("C"), ""),
+        Document("", "", "5", new Timestamp(currentDate.getTime), List("A"), ""),
+        Document("", "", "6", new Timestamp(currentDate.getTime), List("C"), "")
       )
       val result = List(
-        Document("", "", "1", "", List("A"), ""),
-        Document("", "", "2", "", List("C"), ""),
-        Document("", "", "3", "", List("B"), ""),
-        Document("", "", "4", "", List("C"), ""),
-        Document("", "", "5", "", List("A"), ""),
-        Document("", "", "6", "", List("C"), "")
+        Document("", "", "1", new Timestamp(currentDate.getTime), List("A"), ""),
+        Document("", "", "2", new Timestamp(currentDate.getTime), List("C"), ""),
+        Document("", "", "3", new Timestamp(currentDate.getTime), List("B"), ""),
+        Document("", "", "4", new Timestamp(currentDate.getTime), List("C"), ""),
+        Document("", "", "5", new Timestamp(currentDate.getTime), List("A"), ""),
+        Document("", "", "6", new Timestamp(currentDate.getTime), List("C"), "")
       )
 
       patternDetector.detect(documents) mustEqual result
@@ -160,7 +164,7 @@ class PatternDetectorSpec extends Specification {
 
     "detect a valid document index" in {
       val documents = List(
-        Document("", "", "", "", List.empty, "")
+        Document("", "", "", new Timestamp(currentDate.getTime), List.empty, "")
       )
       val index = 0
 
@@ -169,19 +173,19 @@ class PatternDetectorSpec extends Specification {
 
     "get pattern match related documents" in {
       val documents = List(
-        Document("", "", "", "", List("A"), ""),
-        Document("", "", "", "", List("B"), ""),
-        Document("", "", "", "", List("C"), ""),
-        Document("", "", "", "", List("D"), ""),
-        Document("", "", "", "", List("E"), ""),
-        Document("", "", "", "", List("F"), "")
+        Document("", "", "", new Timestamp(currentDate.getTime), List("A"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("B"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("C"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("D"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("E"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("F"), "")
       )
       val firstIndex = 2
       val lastIndex = 4
       val result = List(
-        Document("", "", "", "", List("C"), ""),
-        Document("", "", "", "", List("D"), ""),
-        Document("", "", "", "", List("E"), "")
+        Document("", "", "", new Timestamp(currentDate.getTime), List("C"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("D"), ""),
+        Document("", "", "", new Timestamp(currentDate.getTime), List("E"), "")
       )
 
       patternDetector.getPatternMatchRelatedDocuments(documents, firstIndex, lastIndex) mustEqual result

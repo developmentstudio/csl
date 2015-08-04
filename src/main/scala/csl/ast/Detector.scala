@@ -86,13 +86,25 @@ case class SmallerThanOperator() extends TimesBeforeMatchOperator
 
 case class TimesBeforeMatch(times: Int, operator: Option[TimesBeforeMatchOperator]) extends Positional
 
-sealed trait IntervalUnit
-case class IntervalInSeconds() extends IntervalUnit
-case class IntervalInMinutes() extends IntervalUnit
-case class IntervalInHours() extends IntervalUnit
-case class IntervalInDays() extends IntervalUnit
+sealed trait IntervalUnit {
+  val inMillis: Long = 0
+}
+case class IntervalInSeconds() extends IntervalUnit {
+  override val inMillis: Long = 1000
+}
+case class IntervalInMinutes() extends IntervalUnit {
+  override val inMillis: Long = 60000
+}
+case class IntervalInHours() extends IntervalUnit {
+  override val inMillis: Long = 3600000
+}
+case class IntervalInDays() extends IntervalUnit {
+  override val inMillis: Long = 86400000
+}
 
-case class Interval(number: Int, unit: IntervalUnit)
+case class Interval(number: Int, unit: IntervalUnit) {
+  def inMillis: Long = number * unit.inMillis
+}
 
 sealed trait PatternElement extends Positional
 
