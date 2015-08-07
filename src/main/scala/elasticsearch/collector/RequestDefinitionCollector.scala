@@ -41,9 +41,20 @@ class RequestDefinitionCollector(detector: Detector) {
     val request = client.search(index, query, _type, SearchUriParameters(searchType = Some(Scan), scroll = Some("10m")))
     request onComplete {
       case Success(r) =>
-        val response = ResponseParser.parseJSON(r.getResponseBody)
-        println("Request definition '" + definition.name + "' exists " + response.hits.total + " times in the ES index.") // TODO: Remove
-        this.scrollNextPage(response._scroll_id, definition)
+        if(r.getStatusCode == 404) {
+          throw new Exception(r.getResponseBody)
+        }
+
+        try {
+          val response = ResponseParser.parseJSON(r.getResponseBody)
+          println("Request definition '" + definition.name + "' exists " + response.hits.total + " times in the ES index.") // TODO: Remove
+          this.scrollNextPage(response._scroll_id, definition)
+        } catch {
+          case e: Throwable => {
+            Thread.sleep(1000)
+            this.search(definition)
+          }
+        }
       case Failure(e) => println("An error has occured: " + e.getMessage)
     }
   }
