@@ -1,9 +1,11 @@
 package elasticsearch.ast
 
+import java.sql.Timestamp
+
 import org.json4s.DefaultFormats
 import org.json4s.jackson.JsonMethods.parse
 
-case class Document(_index: String, _type: String, _id: String, _timestamp: String, var labels: List[String], body: String) {
+case class Document(_index: String, _type: String, _id: String, _timestamp: Timestamp, var labels: List[String], body: String) {
   implicit val formats = DefaultFormats
   private var properties = Map[String, Any]()
 
@@ -36,9 +38,9 @@ case class Document(_index: String, _type: String, _id: String, _timestamp: Stri
   }
 
 
-
   def addLabel(label: String): Unit = this.labels = this.labels :+ label
 
-  def hasLabel(label: String): Boolean = this.labels contains(label)
+  def hasLabel(label: String): Boolean = this.labels contains (label)
 }
+
 case class Body()

@@ -41,7 +41,7 @@ case class RequestDefinition(name: String, request: ObjectValue, response: Objec
   }
 }
 
-case class Find(pattern: Pattern, relation: Relation, from: Option[String], till: Option[String]) extends DetectorElement
+case class Find(pattern: Pattern, relation: Relation, from: Option[String], till: Option[String], timesBeforeMatch: Option[TimesBeforeMatch], interval: Option[Interval]) extends DetectorElement
 
 case class Pattern(elements: List[PatternElement]) extends Positional {
   def isDefined: Boolean = elements.nonEmpty
@@ -78,6 +78,32 @@ case class Pattern(elements: List[PatternElement]) extends Positional {
 
 case class Relation(keys: List[String]) extends Positional {
   def isDefined: Boolean = keys.nonEmpty
+}
+
+sealed trait TimesBeforeMatchOperator
+case class BiggerThanOperator() extends TimesBeforeMatchOperator
+case class SmallerThanOperator() extends TimesBeforeMatchOperator
+
+case class TimesBeforeMatch(times: Int, operator: Option[TimesBeforeMatchOperator]) extends Positional
+
+sealed trait IntervalUnit {
+  val inMillis: Long = 0
+}
+case class IntervalInSeconds() extends IntervalUnit {
+  override val inMillis: Long = 1000
+}
+case class IntervalInMinutes() extends IntervalUnit {
+  override val inMillis: Long = 60000
+}
+case class IntervalInHours() extends IntervalUnit {
+  override val inMillis: Long = 3600000
+}
+case class IntervalInDays() extends IntervalUnit {
+  override val inMillis: Long = 86400000
+}
+
+case class Interval(number: Int, unit: IntervalUnit) {
+  def inMillis: Long = number * unit.inMillis
 }
 
 sealed trait PatternElement extends Positional

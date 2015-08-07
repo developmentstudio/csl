@@ -13,9 +13,9 @@ import elasticsearch.result.Csv
 
 object Interpreter {
 
-  val startTime = System.nanoTime()
-
   def main(args: Array[String]) {
+
+    val detectorStartTime = System.nanoTime()
 
     if (args.length == 0) {
       println("Please input a csl file while running the program.")
@@ -30,36 +30,46 @@ object Interpreter {
 
     Storage.init
 
-    val startTime = System.nanoTime()
-
+    val requestDefinitionCollectorStartTime = System.nanoTime()
     val requestDefinitionCollector = new RequestDefinitionCollector(detector)
     if (requestDefinitionCollector.collect) {
-      println("Variable Collector completed")
+      print("Request Definition Collector completed. ")
+      printTimeElapsed(requestDefinitionCollectorStartTime, "RequestDefinitionCollector")
     }
-    printTimeElapsed
 
+
+    val relationCollectorStartTime = System.nanoTime()
     val relationCollector = new RelationCollector(detector)
+    print("Relation Collector started. ")
     if (relationCollector.collect) {
-      println("Relation Collector completed")
+      print("Relation Collector completed. ")
+      printTimeElapsed(relationCollectorStartTime, "RelationCollector")
     }
-    printTimeElapsed
 
+
+    val patternDetectorStartTime = System.nanoTime()
     val patternDetector = new PatternDetector(detector)
+    print("Pattern Detector started. ")
     val documents = patternDetector.detect
-    println(patternDetector.totalMatches + " matches found existing of a total of " + documents.length + " documents.")
-    printTimeElapsed
+    print(patternDetector.totalMatches + " matches found existing of a total of " + documents.length + " documents. ")
+    printTimeElapsed(patternDetectorStartTime, "PatternDetector")
 
+    val resultExportStartTime = System.nanoTime()
+    print("Result export started. ")
     detector.result.export match {
       case CsvFile(keys) =>
         val csv = new Csv(documents, keys)
         val path = Config.setting("settings.result.exportPath")
         csv.save(path + filename(detector, ".csv"))
-        println("Csv export completed")
+        print("Csv export completed. ")
+        printTimeElapsed(resultExportStartTime, "Result export to CSV")
       case e => throw new Exception(s"Export type '$e' not supported.")
     }
-    printTimeElapsed
-
     Storage.close
+
+    println("")
+    printTimeElapsed(detectorStartTime, "Detector: " + detector.label)
+
     System.exit(0)
   }
 
@@ -86,8 +96,7 @@ object Interpreter {
     s"${label}_${dateFormat.format(today)}${extention}"
   }
 
-  private def printTimeElapsed: Unit = {
-    val endTime = System.nanoTime()
-    println("Elapsed time: " + (endTime - startTime) / 1000000000 + " seconds")
+  private def printTimeElapsed(start: Long, label: String): Unit = {
+    println("Elapsed time: " + (System.nanoTime() - start) / 1000000000 + " seconds" + " (" + label + ")")
   }
 }

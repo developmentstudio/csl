@@ -72,7 +72,7 @@ object Storage {
       val _index = result.getString("_index")
       val _type = result.getString("_type")
       val _id = result.getString("_id")
-      val timestamp = result.getString("timestamp")
+      val timestamp = result.getTimestamp("timestamp")
       val variable_name = result.getString("variable_name")
       val body = result.getString("body")
 
@@ -107,7 +107,7 @@ object Storage {
       }
     }
     result.close()
-    documents.values.toList.sortBy(_._timestamp)
+    documents.values.toList.sortBy(_._timestamp.getTime)
   }
 
   def save(response: Response, label: Option[String], relationKeys: List[String]): Unit = {

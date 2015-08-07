@@ -40,8 +40,15 @@ class RelationCollector(detector: Detector) {
       val request = client.search(index, query, _type, SearchUriParameters(searchType = Some(Scan), scroll = Some("10m")))
       request onComplete {
         case Success(r) =>
-          val response = ResponseParser.parseJSON(r.getResponseBody)
-          this.scrollNextPage(response._scroll_id, relation)
+          try {
+            val response = ResponseParser.parseJSON(r.getResponseBody)
+            this.scrollNextPage(response._scroll_id, relation)
+          } catch {
+            case _: Throwable => {
+              Thread.sleep(1000)
+              this.search(relation)
+            }
+          }
         case Failure(e) => println("An error has occured: " + e.getMessage)
       }
     } else {
@@ -53,12 +60,19 @@ class RelationCollector(detector: Detector) {
     val request = client.scroll("10m", scroll_id)
     request.onComplete {
       case Success(r) =>
-        val response = ResponseParser.parseJSON(r.getResponseBody)
-        if (response.hasHits) {
-          Storage.save(response, None, this.detector.find.relation.keys)
-          this.scrollNextPage(response._scroll_id, relation)
-        } else {
-          status.setCompleted(relation.toString)
+        try {
+          val response = ResponseParser.parseJSON(r.getResponseBody)
+          if (response.hasHits) {
+            Storage.save(response, None, this.detector.find.relation.keys)
+            this.scrollNextPage(response._scroll_id, relation)
+          } else {
+            status.setCompleted(relation.toString)
+          }
+        } catch {
+          case _: Throwable => {
+            Thread.sleep(1000)
+            this.scrollNextPage(scroll_id, relation)
+          }
         }
       case Failure(e) => throw new Exception(e)
     }
