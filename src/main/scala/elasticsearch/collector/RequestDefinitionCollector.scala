@@ -42,7 +42,7 @@ class RequestDefinitionCollector(detector: Detector) {
     request onComplete {
       case Success(r) =>
         val response = ResponseParser.parseJSON(r.getResponseBody)
-        println("Request definition " + definition.name + " exists " + response.hits.total + " times in the ES index.") // TODO: Remove
+        println("Request definition '" + definition.name + "' exists " + response.hits.total + " times in the ES index.") // TODO: Remove
         this.scrollNextPage(response._scroll_id, definition)
       case Failure(e) => println("An error has occured: " + e.getMessage)
     }
