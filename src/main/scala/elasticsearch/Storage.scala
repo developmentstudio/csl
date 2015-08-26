@@ -24,9 +24,9 @@ object Storage {
   val connection = DriverManager.getConnection(url, username, password)
 
   def init: Unit = {
-    val deleteSetQuery = getConnection.prepareStatement("DELETE FROM raw_result_set")
+    val deleteSetQuery = getConnection.prepareStatement("TRUNCATE TABLE raw_result_set")
     deleteSetQuery.execute()
-    val deleteLabelQuery = getConnection.prepareStatement("DELETE FROM document_label")
+    val deleteLabelQuery = getConnection.prepareStatement("TRUNCATE TABLE document_label")
     deleteLabelQuery.execute()
   }
 
