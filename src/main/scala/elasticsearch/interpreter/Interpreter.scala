@@ -27,8 +27,10 @@ object Interpreter {
     }
 
     val detector = CSLInterpreter.fromFile(args(0))
+    println("Detector AST Ready")
 
     Storage.init
+    println("Storage initialized")
 
     val requestDefinitionCollectorStartTime = System.nanoTime()
     val requestDefinitionCollector = new RequestDefinitionCollector(detector)

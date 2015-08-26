@@ -46,6 +46,7 @@ class RelationCollector(detector: Detector) {
           } catch {
             case _: Throwable => {
               Thread.sleep(1000)
+              println("(Relation) Retry Search " + relation.toString)
               this.search(relation)
             }
           }
@@ -71,6 +72,7 @@ class RelationCollector(detector: Detector) {
         } catch {
           case _: Throwable => {
             Thread.sleep(1000)
+            println("(Relation) Retry Scroll ID " + scroll_id + " " + relation.toString)
             this.scrollNextPage(scroll_id, relation)
           }
         }

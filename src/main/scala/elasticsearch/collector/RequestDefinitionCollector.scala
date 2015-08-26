@@ -52,6 +52,7 @@ class RequestDefinitionCollector(detector: Detector) {
         } catch {
           case e: Throwable => {
             Thread.sleep(1000)
+            println("(Definition) Retry " + definition.toString)
             this.search(definition)
           }
         }

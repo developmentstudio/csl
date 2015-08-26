@@ -9,7 +9,11 @@ class FilterQueryGenerator(from: Option[String] = None, till: Option[String] = N
     val filters = properties map (createFilter)
     var jsonFilter = filters.map(_.toString).mkString(",")
     if (from.isDefined || till.isDefined) {
-      jsonFilter = jsonFilter + "," + new DateRangeFilter(from, till).toString
+      if (jsonFilter.isEmpty) {
+        jsonFilter = new DateRangeFilter(from, till).toString
+      } else {
+        jsonFilter = jsonFilter + "," + new DateRangeFilter(from, till).toString
+      }
     }
 
     """{
@@ -20,7 +24,7 @@ class FilterQueryGenerator(from: Option[String] = None, till: Option[String] = N
       """       ]
         |     }
         |   },
-        |   "size": 100
+        |   "size": 1000
         |}
       """.stripMargin
   }
